@@ -371,8 +371,8 @@ def testGather(bigtest):
 
 
 if __name__ == "__main__":
-	from shnetutil import projconfig
-	from shnetutil.pipeline import BigFile
+	from mk_mlutils import projconfig
+	from mk_mlutils.pipeline import BigFile
 
 	datasets_root = projconfig.getCIFAR10Folder()
 	testfile, trainfile = datasets_root/"cifar-testX.dat", datasets_root/"cifar-trainX.dat"

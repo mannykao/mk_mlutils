@@ -1,14 +1,8 @@
-cplxmodule
-joblib
+build
 numpy
 pillow
-pycoshrem
 pydantic
 scipy
-tensorly>=0.7.0
-tensorly-torch>=0.3.0
 torch>=1.9
 torchvision
-https://github.com/mannykao/pyutils
-https://github.com/sksq96/pytorch-summary/archive/master.zip
-
+external/mkpyutils-1.5-py3-none-any.whl

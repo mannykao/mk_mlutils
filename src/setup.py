@@ -10,7 +10,7 @@ from setuptools import find_packages
 packages=find_packages()
 print(f"{packages=}")
 
-setuptools.setup(name='shnetutil',
+setuptools.setup(name='mk_mlutils',
 	version='1.3',
 	description='Complex Shearlet and Torch Utilities',
 	author='Manny Ko',
