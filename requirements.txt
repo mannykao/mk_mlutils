@@ -1,0 +1,14 @@
+cplxmodule
+joblib
+numpy
+pillow
+pycoshrem
+pydantic
+scipy
+tensorly>=0.7.0
+tensorly-torch>=0.3.0
+torch>=1.9
+torchvision
+https://github.com/mannykao/pyutils
+https://github.com/sksq96/pytorch-summary/archive/master.zip
+

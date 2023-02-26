@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools", "wheel"]		#PEP 508
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mk_mlutils"
+version = "1.0.0"
+authors = [
+  { name="Manny Ko", email="man960@hotmail.com" },
+]
+description = "ML Utilies"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
