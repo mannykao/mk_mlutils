@@ -11,7 +11,7 @@ from typing import List, Union
 import numpy as np
 import scipy.interpolate as interpolate
 
-from shnetutil.dataset import dataset_base
+from mk_mlutils.dataset import dataset_base
 
 kTestRand=False
 #
@@ -220,45 +220,45 @@ def test_bins(
 		print(f"  min, max {min(cnt.values())}, {max(cnt.values())}")
 		#print(balanced)
 
-def test_getBalancedSubsetCDF():
-	# code taken from t_balsubset.py	
-	from shnetutil import projconfig
-	from shnetutil.pipeline import loadMNIST
+if __name__ == '__main__':
+	def test_getBalancedSubsetCDF():
+		# code taken from t_balsubset.py	
+		from mk_mlutils import projconfig
+		from mk_mlutils.pipeline import loadMNIST
 
-	mnistdir = projconfig.getMNISTFolder()
-	fashiondir = projconfig.getFashionMNISTFolder()
-	mnist_test   = loadMNIST.getdb(mnistdir, istrain=False, kTensor = False)
-	fashion_test = loadMNIST.getdb(fashiondir, istrain=False, kTensor = False)
+		mnistdir = projconfig.getMNISTFolder()
+		print(f"{mnistdir=}")
+		fashiondir = projconfig.getFashionMNISTFolder()
+		mnist_test   = loadMNIST.getdb(mnistdir, istrain=False, kTensor = False)
+		fashion_test = loadMNIST.getdb(fashiondir, istrain=False, kTensor = False)
 
-	mnist_test = dataset_base.SortedDataset(mnist_test)
-	print(f"mnist_test {len(mnist_test)} from {mnistdir}")
+		mnist_test = dataset_base.SortedDataset(mnist_test)
+		print(f"mnist_test {len(mnist_test)} from {mnistdir}")
 
-	hist, bin_edges = getHistogram(mnist_test, bins=10, tag='mnist')
-	print(f"{type(mnist_test)}: hist = {hist}")
+		hist, bin_edges = getHistogram(mnist_test, bins=10, tag='mnist')
+		print(f"{type(mnist_test)}: hist = {hist}")
 
-	mnist_stats = dataset_base.DatasetStats(mnist_test)
-	print(mnist_stats.labelCounts(sort=True))
+		mnist_stats = dataset_base.DatasetStats(mnist_test)
+		print(mnist_stats.labelCounts(sort=True))
 
-	if kTestRand:
-		test_bins(
-			fashion_test, 
-			bin_range=(0, 50, 10), 
+		if kTestRand:
+			test_bins(
+				fashion_test, 
+				bin_range=(0, 50, 10), 
+				rng = np.random.Generator(np.random.PCG64(1103)),	#PCG64|MT19937|PCG64DXSM
+				tag="PCG64"
+			)
+
+		subset = getBalancedSubsetCDF(
+			mnist_test,
+			fraction=.10,
+			bins=0,
 			rng = np.random.Generator(np.random.PCG64(1103)),	#PCG64|MT19937|PCG64DXSM
-			tag="PCG64"
+			withreplace=False,		#sample with replacement
 		)
 
-	subset = getBalancedSubsetCDF(
-		mnist_test,
-		fraction=.10,
-		bins=0,
-		rng = np.random.Generator(np.random.PCG64(1103)),	#PCG64|MT19937|PCG64DXSM
-		withreplace=False,		#sample with replacement
-	)
+		subset_stats = dataset_base.DatasetStats(subset)
+		print(f"{subset_stats.labelCounts(sort=True)=}")
+		subset_stats.dumpDatasetInfo()
 
-	subset_stats = dataset_base.DatasetStats(subset)
-	print(f"{subset_stats.labelCounts(sort=True)=}")
-	subset_stats.dumpDatasetInfo()
-
-
-if __name__ == '__main__':
 	test_getBalancedSubsetCDF()

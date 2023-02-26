@@ -18,10 +18,10 @@ from skimage.color import (rgb2lab, rgb2yuv, rgb2ycbcr, lab2rgb, yuv2rgb, ycbcr2
 from torchvision import datasets
 #from torchvision.utils import check_integrity
 
-from shnetutil import projconfig
-from shnetutil.dataset import dataset_base, datasetutils
-from shnetutil.pipeline import augmentation
-from shnetutil.pipeline.color import colorspace as colorspace
+from mk_mlutils import projconfig
+from mk_mlutils.dataset import dataset_base, datasetutils
+from mk_mlutils.pipeline import augmentation
+from mk_mlutils.pipeline.color import colorspace as colorspace
 
 from . import BigFile, BigFileBuilder
 

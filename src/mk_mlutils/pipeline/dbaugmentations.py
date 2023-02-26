@@ -14,8 +14,8 @@ from pydantic import BaseModel
 import time
 from typing import List, Tuple, Dict, Union, Optional
 
-from shnetutil.coshrem_xform import ksh_spec
-from shnetutil.pipeline import batch, augmentation
+from mk_mlutils.coshrem_xform import ksh_spec
+from mk_mlutils.pipeline import batch, augmentation
 from mkpyutils.testutil import time_spent
 
 #from . import training

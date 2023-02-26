@@ -18,10 +18,10 @@ import torch.nn as nn
 from mkpyutils.classutils import method_exists
 from mkpyutils.testutil import time_spent
 
-from shnetutil.dataset import dataset_base, datasetutils
-from shnetutil.modelling import modelfactory
-from shnetutil.pipeline import augmentation, batch, dbaugmentations
-from shnetutil.utils import torchutils, trace
+from mk_mlutils.dataset import dataset_base, datasetutils
+from mk_mlutils.modelling import modelfactory
+from mk_mlutils.pipeline import augmentation, batch, dbaugmentations
+from mk_mlutils.utils import torchutils, trace
 
 
 # tuple to config the Model for each training stage - used in ModelPipeline()

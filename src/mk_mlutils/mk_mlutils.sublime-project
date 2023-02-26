@@ -29,7 +29,7 @@
 				"*.js",
 				"*.svg",
 				"*.whl",
-				"*.npz",
+				"*.npz"
 			],
 			"folder_exclude_patterns":
 			[
@@ -40,8 +40,11 @@
 				"build/",
 				"*.egg-info",
 				"data"
-			],			
+			],
 			"path": "D:\\Dev\\ML\\mk_mlutils"
+		},
+		{
+			"path": "D:\\Dev\\Python\\pyutils-repo"
 		}
 	],
 	"virtualenv": "D:\\Dev\\ML\\mk_mlutils\\venv4mk_mlutils"

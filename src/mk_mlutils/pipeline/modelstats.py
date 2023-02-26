@@ -18,8 +18,8 @@ import torch.nn.functional as F
 from cplxmodule.nn.relevance import penalties
 from cplxmodule.nn.utils.sparsity import sparsity, named_sparsity
 
-from shnetutil.utils import torchutils, trace
-from shnetutil.pipeline import torchbatch, trainutils
+from mk_mlutils.utils import torchutils, trace
+from mk_mlutils.pipeline import torchbatch, trainutils
 
 Model_Score = namedtuple("Model_Score", "cm precision recall loss")
 
