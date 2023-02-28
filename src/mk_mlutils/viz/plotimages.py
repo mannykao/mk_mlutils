@@ -21,8 +21,8 @@ def grid2d(
 		plt.imshow(img, cmap='gray')	
 
 if __name__=='__main__':
-	from shnetutil import projconfig
-	from shnetutil.pipeline import loadMNIST
+	from mk_mlutils import projconfig
+	from mk_mlutils.pipeline import loadMNIST
 
 	mnistfolder = projconfig.getMNISTFolder()
 	mnist_test = loadMNIST.getdb(mnistfolder, istrain=False, kTensor = False)

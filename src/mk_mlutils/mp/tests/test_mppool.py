@@ -16,11 +16,11 @@ from queue import Empty, Full
 #import signal
 
 #our packages
-from shnetutil import projconfig, torchutils
-from shnetutil.dataset import dataset_base as db
-from shnetutil.dataset import fashion
-from shnetutil.pipeline import BigFile
-from shnetutil.mp import mppool
+from mk_mlutils import projconfig, torchutils
+from mk_mlutils.dataset import dataset_base as db
+from mk_mlutils.dataset import fashion
+from mk_mlutils.pipeline import BigFile
+from mk_mlutils.mp import mppool
 
 
 kBigFile=True 	#use BigFile as input dataset
@@ -129,7 +129,7 @@ class XformPool(mppool.MPPool):
 		return Worker(queue, send_end, workerargs)	#this will start running immediately
 
 if (__name__ == '__main__'):
-	from shnetutil import coshrem_xform
+	from mk_mlutils import coshrem_xform
 
 	#1. data paths definition.
 	#datafolder = "../covid-chestxray-dataset/"

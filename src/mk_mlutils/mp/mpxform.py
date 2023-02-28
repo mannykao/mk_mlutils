@@ -182,7 +182,7 @@ def xformdataset(
 
 if __name__ == '__main__':
 	# for our unit test only (use the established Fashion dataset)
-	import shnetutil.dataset.fashion
+	import mk_mlutils.dataset.fashion
 	from .. import pysh_xform, shearletxform, torchutils
 
 	def prepFashion(	

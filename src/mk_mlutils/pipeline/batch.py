@@ -17,9 +17,9 @@ from collections import namedtuple, Counter
 import asyncio
 
 #our modules
-from shnetutil import projconfig
-from shnetutil.dataset import dataset_base
-from shnetutil.utils import torchutils
+from mk_mlutils import projconfig
+from mk_mlutils.dataset import dataset_base
+from mk_mlutils.utils import torchutils
 
 from mkpyutils.testutil import time_spent
 
@@ -316,7 +316,7 @@ def getBatchAsync(dbchunk, batch, logging=False):
 #
 # Unit test routines:
 #
-from shnetutil.pipeline import loadMNIST
+from mk_mlutils.pipeline import loadMNIST
 
 def test_epochgen(mnist_train, bsize):
 	""" use .epoch() generator on the BatchBuilder """

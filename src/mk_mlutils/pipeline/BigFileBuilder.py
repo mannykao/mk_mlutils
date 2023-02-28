@@ -175,7 +175,7 @@ class BigFileBuilder():
 		return BigFileBuilder.kBigFileClasses.get(self.bigfileclass, None)
 
 	def start(self, dataset):
-		print(f"shnetutil building BigFile for {self._filename}..", flush=True)
+		print(f"mk_mlutils building BigFile for {self._filename}..", flush=True)
 		self.num_entries = len(dataset)
 		self.now = time.time()
 		targetclass = self.targetclass

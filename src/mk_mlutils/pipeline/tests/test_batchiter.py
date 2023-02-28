@@ -8,8 +8,8 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader, random_split
 
 #our packages
-from shnetutil import dataset_base, projconfig, torchutils
-from shnetutil.pipeline import loadMNIST, augmentation, batch
+from mk_mlutils import dataset_base, projconfig, torchutils
+from mk_mlutils.pipeline import loadMNIST, augmentation, batch
 
 #from utils import batch
 

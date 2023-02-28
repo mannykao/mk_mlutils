@@ -21,10 +21,10 @@ from mkpyutils import dirutils
 from mkpyutils import testutil
 
 #from shnetutil.pipeline import BigFile, BigFileBuilder
-from shnetutil.dataset import dataset_base, fashion
-from shnetutil.pipeline import batch, augmentation
-from shnetutil import coshrem_xform, torchutils
-from shnetutil.mp import mpxform, mppool
+from mk_mlutils.dataset import dataset_base, fashion
+from mk_mlutils.pipeline import batch, augmentation
+from mk_mlutils import coshrem_xform, torchutils
+from mk_mlutils.mp import mpxform, mppool
 
 #last update: 11//22/2021. Ran successfully
 

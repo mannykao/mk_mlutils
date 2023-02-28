@@ -6,9 +6,9 @@ Created on Tue Jan 4 13:47:29 2022
 
 @author: Ujjawal.K.Panchal
 """
-from shnetutil.pipeline import augmentation
-from shnetutil.dataset import fashion, cifar10
-#from shnetutil import  torchutils
+from mk_mlutils.pipeline import augmentation
+from mk_mlutils.dataset import fashion, cifar10
+#from mk_mlutils import  torchutils
 
 
 #settings.
