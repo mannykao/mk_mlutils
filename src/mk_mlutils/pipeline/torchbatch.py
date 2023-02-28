@@ -11,9 +11,6 @@ Created on Mon Mar 16 17:44:29 2020
 import numpy as np
 import torch
 
-#cplx packages.
-from cplxmodule import cplx
-
 from . import batch
 
 class NullXform(object):

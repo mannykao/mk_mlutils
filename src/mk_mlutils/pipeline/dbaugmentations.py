@@ -18,7 +18,6 @@ from mk_mlutils.coshrem_xform import ksh_spec
 from mk_mlutils.pipeline import batch, augmentation
 from mkpyutils.testutil import time_spent
 
-#from . import training
 
 class CaptureAugmentation(augmentation.NullXform):
 	""" Capture the result of a certain stage in our augmentation pipeline """
@@ -229,34 +228,3 @@ def DCF_augmentations(
 		augmentation.ToTorchTensorDCF(),
 	])
 	return ourTrainTransform, ourTestTransform, ourTestTransform
-
-def surRealAugmentations(mean, std, kCache:bool=False, device='cpu'):
-	""" The augmentation pipeline we use for our training Fashion with SurReal layers."""
-	ourTransform = augmentation.Sequential([
-		augmentation.Normalize(mean, std),		#10K1E: 79.7%, 10K4E: 86.9%, 10K10E: 87.6%	
-		#augmentation.MinMaxScaler(),			#10K1E: 79.2%, 10K4E: 85.4%, 10K10E: 89.2%
-		augmentation.Pad([(0,0), (2,2), (2,2)]),		  
-		augmentation.CoShREM(device=device, tocplx = False, topolar = True, phase_first = True, 
-							 denoise = False),
-		augmentation.ToTorchDims(),
-		#augmentation.ComplexNormalize(normdshmean)
-	])
-	return ourTransform
-
-def cifarAugmentations(mean, std, colorspace: str, batchsize=512, device='cuda', precursor_augs: List = [], ):
-	""" The augmentation pipeline we use for CIFAR training """
-	trainauglist = precursor_augs
-	auglist = [
-		augmentation.Normalize(mean, std),		#10K1E: 79.7%, 10K4E: 86.9%, 10K10E: 87.6%	
-		augmentation.CoShREM(
-						device=device, tocplx = True,
-				    	colorspace = colorspace
-		),
-		augmentation.ToTorchDims(),
-		CaptureAugmentation(batchsize=batchsize),	 #acts like a NullXform until activated
-	]
-	trainauglist.extend(auglist)
-	trainXform = augmentation.Sequential(trainauglist, device=device)
-	testXform = augmentation.Sequential(auglist, device=device)
-	validateXform = augmentation.Sequential(auglist, device=device)
-	return trainXform, testXform, validateXform	

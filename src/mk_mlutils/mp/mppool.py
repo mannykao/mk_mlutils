@@ -320,8 +320,8 @@ if kUnitTest:
 
 
 if (__name__ == '__main__') and kUnitTest:
-	from shnetutil import coshrem_xform
-	from shnetutil.dataset import dataset_base
+	from mk_mlutils import coshrem_xform
+	from mk_mlutils.dataset import dataset_base
 
 	#1. data paths definition.
 	datafolder = "../covid-chestxray-dataset/"
