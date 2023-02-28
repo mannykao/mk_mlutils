@@ -15,6 +15,10 @@ from mk_mlutils import projconfig
 import mk_mlutils.dataset.datasetutils as datasetutils
 import mk_mlutils.dataset.fashion as fashion
 
+import mk_mlutils.pipeline.batch as batch
+import mk_mlutils.pipeline.logutils as logutils
+
+
 #from ..pipeline import loadMNIST, augmentation, dbaugmentations, trainutils
 
 kRepoRoot="mk_mlutils/src/mk_mlutils"
