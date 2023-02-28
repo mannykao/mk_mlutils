@@ -316,7 +316,6 @@ def getBatchAsync(dbchunk, batch, logging=False):
 #
 # Unit test routines:
 #
-from mk_mlutils.pipeline import loadMNIST
 
 def test_epochgen(mnist_train, bsize, epochs=1):
 	""" use .epoch() generator on the BatchBuilder """
@@ -369,6 +368,13 @@ def test_iterObj(mnist_train, bsize, epochs=1):
 			labels1.append(labels)
 		print(labelcnt)	
 	return labels1
+
+def unitestBagging(dataset: dataset_base.DataSet, bsize:int=128, epochs:int=1):
+	test_epochgen(dataset, bsize=256, epochs=1)
+	test_selfIter(dataset, bsize=256, epochs=1)
+	test_iterObj(dataset, bsize=256, epochs=1)
+
+
 #
 # BatchCache:
 #
@@ -509,6 +515,8 @@ def verifyBatchCache(batchbuilder, xform):
 
 
 if __name__ == '__main__':
+	from mk_mlutils.pipeline import loadMNIST
+
 	fashiondir = projconfig.getFashionMNISTFolder()
 
 	#dataset = MNIST('mnist', train=True, download=True, transform=MNIST_TRANSFORM)

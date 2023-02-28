@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Title: Training pipeline utils - 
+Title: unit test for batch.py - 
 	
-Created on Wed Sept 1 16:01:29 2020
+Created on Tues Feb 28 16:01:29 2023
 
-@author: Manny Ko & Ujjawal.K.Panchal
+@author: Manny Ko 
 """
-import re
 from collections import namedtuple, Counter
 from pathlib import Path, PurePosixPath
 from typing import List, Tuple, Union, Optional
@@ -89,6 +88,7 @@ if __name__ == '__main__':
 
 	train, test, validateset = test_balancedSubset(validate=0.3)
 
+	#batch.unitestBagging(validateset, bsize=256, epochs=1)
 	test_epochgen(validateset, bsize=256, epochs=1)
 	test_selfIter(validateset, bsize=256, epochs=1)
 	test_iterObj(validateset, bsize=256, epochs=1)
