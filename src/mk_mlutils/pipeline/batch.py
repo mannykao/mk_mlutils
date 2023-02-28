@@ -318,7 +318,7 @@ def getBatchAsync(dbchunk, batch, logging=False):
 #
 from mk_mlutils.pipeline import loadMNIST
 
-def test_epochgen(mnist_train, bsize):
+def test_epochgen(mnist_train, bsize, epochs=1):
 	""" use .epoch() generator on the BatchBuilder """
 	trainbatchbuilder = Bagging(mnist_train, bsize)
 	labels1 = []
@@ -337,7 +337,7 @@ def test_epochgen(mnist_train, bsize):
 		print(labelcnt)	
 	return labels1
 		
-def test_selfIter(mnist_train, bsize):
+def test_selfIter(mnist_train, bsize, epochs=1):
 	""" use iter() on the BatchBuilder itself """
 	trainbatchbuilder = Bagging(mnist_train, bsize)
 	labels2 = []
@@ -353,7 +353,7 @@ def test_selfIter(mnist_train, bsize):
 		print(labelcnt)
 	return labels2	
 
-def test_iterObj(mnist_train, bsize):
+def test_iterObj(mnist_train, bsize, epochs=1):
 	""" standalone iterator .BatchIterator """
 	trainbatchbuilder = Bagging(mnist_train, bsize)
 	train_loader = BatchIterator(trainbatchbuilder)
