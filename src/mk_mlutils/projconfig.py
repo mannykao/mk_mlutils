@@ -12,7 +12,7 @@ import re
 from pathlib import Path, PurePosixPath
 from mkpyutils import dirutils
 
-kOurRepo="mk_mlutils"
+kRepoRoot="mk_mlutils/src/mk_mlutils"
 kOurRoot="./"
 
 def setRepoRoot(repo:str, reffile):
@@ -25,31 +25,31 @@ def setRepoRoot(repo:str, reffile):
 	posix = PurePosixPath(ourpath)
 	kOurRoot = Path(re.sub(f"/{kOurRepo}/.*$", f"/{kOurRepo}/", str(posix)))
 
-def getRepoRoot(reffile=__file__):
+def getRepoRoot(reffile=__file__) -> Path:
 	""" return <srcroot>/onsen where onsen is located - e.g. '<srcroot>/onsen' 
 		Assumes our venv is located directly under 'onsen' which is what setup.txt prescribe.
 	"""
-	return kOurRoot			#D:\Dev\SigProc\onsen
+	return Path(kOurRoot)			#D:/Dev/ML/mk_mlutils
 
-def getDataFolder():
+def getDataFolder() -> Path:
 	""" return '<srcroot>/onsen/data' """
 	root = getRepoRoot()
 	return root / 'data'
 
-def getDataFolder():
+def getDataFolder() -> Path:
 	""" return '<srcroot>/onsen/data' """
 	root = getRepoRoot()
 	return root / 'data'
 
-def getMNISTFolder():
+def getMNISTFolder() -> Path:
 	datafolder = getDataFolder()
 	return datafolder / 'MNIST' / 'raw'
 
-def getFashionMNISTFolder():
+def getFashionMNISTFolder() -> Path:
 	datafolder = getDataFolder()
 	return datafolder / 'FashionMNIST' / 'raw'
 
-def createFashionMNISTFolder():
+def createFashionMNISTFolder() -> Path:
 	datasets_root = getDataFolder()
 	dirutils.mkdir(str(datasets_root/'FashionMNIST'))
 	dirutils.mkdir(str(getFashionMNISTFolder()))
@@ -58,6 +58,6 @@ def createCIFAR10Folder():
 	datasets_root = getDataFolder()
 	dirutils.mkdir(str(datasets_root / 'CIFAR10'))
 
-def getCIFAR10Folder():
+def getCIFAR10Folder() -> Path:
 	datasets_root = getDataFolder()
 	return datasets_root / 'CIFAR10'
