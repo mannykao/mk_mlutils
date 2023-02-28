@@ -12,7 +12,7 @@ import re
 from pathlib import Path, PurePosixPath
 from mkpyutils import dirutils
 
-kOurRepo="onsen"
+kOurRepo="mk_mlutils"
 kOurRoot="./"
 
 def setRepoRoot(repo:str, reffile):

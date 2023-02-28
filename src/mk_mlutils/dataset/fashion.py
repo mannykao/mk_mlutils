@@ -13,7 +13,10 @@ from typing import List, Tuple, Union, Optional
 
 from .. import projconfig
 from . import datasetutils
-from ..pipeline import loadMNIST, augmentation, dbaugmentations, trainutils
+from ..pipeline import loadMNIST
+
+#comment out CoShNet dependencies:
+#from ..pipeline import trainutils
 
 
 kImageSize = 28
@@ -37,16 +40,22 @@ def load_fashion(
 	}
 	datasets_root = dispatch[datasetname]
 	print(datasets_root)
-	fashion_train = loadMNIST.getdb(datasets_root, istrain=True, kTensor = kTensor)
-	fashion_test = loadMNIST.getdb(datasets_root, istrain=False, kTensor = kTensor)
-	training_set, test_set = trainutils.getTrainTest(trset, fashion_train, fashion_test, useCDF=True)
+	train_set = loadMNIST.getdb(datasets_root, istrain=True, kTensor = kTensor)
+	test_set = loadMNIST.getdb(datasets_root, istrain=False, kTensor = kTensor)
+
+	#train_set, test_set = trainutils.getTrainTest(trset, fashion_train, fashion_test, useCDF=True)
 
 	#1: subset our training set?
-	#training_set = datasetutils.getBalancedSubset(training_set, 0.2)
+	#train_set = datasetutils.getBalancedSubset(train_set, 0.2)
 	#1.1: subset our validate set?
-	validateset = datasetutils.getBalancedSubset(test_set, validate, offset=0, kLogging=kLogging, name="validasetset")		#6k (assuming 60Kxx) validate set for frequent validate
+	validateset = datasetutils.getBalancedSubset(
+		test_set, 
+		validate, offset=0, 
+		kLogging=kLogging, 
+		name="validasetset"
+	)		#6k (assuming 60Kxx) validate set for frequent validate
 
-	return training_set, test_set, validateset
+	return train_set, test_set, validateset
 
 def fashion_set(args, validate=0.1)-> tuple:
 	fashion_dataset = fashion.load_fashion(
