@@ -221,12 +221,17 @@ def test_bins(
 		#print(balanced)
 
 if __name__ == '__main__':
+	from mk_mlutils import projconfig
+	
+	kRepoRoot="mk_mlutils/src/mk_mlutils"
+	projconfig.setRepoRoot(kRepoRoot, __file__)
+
 	def test_getBalancedSubsetCDF():
 		# code taken from t_balsubset.py	
 		from mk_mlutils import projconfig
 		from mk_mlutils.pipeline import loadMNIST
 
-		mnistdir = projconfig.getMNISTFolder()
+		mnistdir = projconfig.getFashionMNISTFolder()
 		print(f"{mnistdir=}")
 		fashiondir = projconfig.getFashionMNISTFolder()
 		mnist_test   = loadMNIST.getdb(mnistdir, istrain=False, kTensor = False)
