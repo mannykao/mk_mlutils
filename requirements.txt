@@ -3,6 +3,7 @@ numpy
 pillow
 pydantic
 scipy
+scikit-image
 torch>=1.9
 torchvision
 external/mkpyutils-1.5-py3-none-any.whl

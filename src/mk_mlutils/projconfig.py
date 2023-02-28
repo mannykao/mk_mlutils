@@ -13,19 +13,23 @@ from pathlib import Path, PurePosixPath
 from mkpyutils import dirutils
 
 kOurRepo="onsen"
+kOurRoot="./"
 
-def setRepoRoot(repo:str):
+def setRepoRoot(repo:str, reffile):
+	global kOurRepo, kOurRoot
+
+	#print(f"{repo=} {reffile}")
 	kOurRepo = repo
+
+	ourpath = Path(reffile) 	#D:\Dev\SigProc\onsen\venv4sh\lib\site-packages\shnetutil\projconfig.py
+	posix = PurePosixPath(ourpath)
+	kOurRoot = Path(re.sub(f"/{kOurRepo}/.*$", f"/{kOurRepo}/", str(posix)))
 
 def getRepoRoot(reffile=__file__):
 	""" return <srcroot>/onsen where onsen is located - e.g. '<srcroot>/onsen' 
 		Assumes our venv is located directly under 'onsen' which is what setup.txt prescribe.
 	"""
-	#print(f"getRepoRoot.__file__ {__file__}")
-	ourpath = Path(reffile) 	#D:\Dev\SigProc\onsen\venv4sh\lib\site-packages\shnetutil\projconfig.py
-	posix = PurePosixPath(ourpath)
-	root = Path(re.sub(f"/{kOurRepo}/.*$", f"/{kOurRepo}/", str(posix)))
-	return root			#D:\Dev\SigProc\onsen
+	return kOurRoot			#D:\Dev\SigProc\onsen
 
 def getDataFolder():
 	""" return '<srcroot>/onsen/data' """
