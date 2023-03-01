@@ -12,13 +12,36 @@ import re
 from pathlib import Path, PurePosixPath
 from mkpyutils import dirutils
 
-kRepoRoot="mk_mlutils/src/mk_mlutils"
-kOurRoot="./"
+#
+# globals configuration for the root of our repo.
+# anchor for all other files especially datasets, external packages (whl) etc.
+#
+kRepoRoot="mk_mlutils"
+kToSrcRoot="src/mk_mlutils"	#kRepoRoot/kToSrcRoot = "mk_mlutils/src/mk_mlutils"
+
+def getRefFile():
+	return __file__
+
+def extractRepoRoot(reffile:str=__file__, reporoot:str=kRepoRoot) -> Path:
+	parts = Path(reffile).parts
+
+	ourroot = Path("")
+	if (reporoot in parts):
+#		print(f"found {reporoot} in {reffile}")
+		for part in parts:
+
+			if part == reporoot:
+				ourroot /=  part
+				break
+			else:					
+				ourroot /=  part
+	return ourroot
+
+kOurRoot=extractRepoRoot(__file__, kRepoRoot) / kToSrcRoot
 
 def setRepoRoot(repo:str, reffile):
 	global kOurRepo, kOurRoot
 
-	#print(f"{repo=} {reffile}")
 	kOurRepo = repo
 
 	ourpath = Path(reffile) 	#D:\Dev\SigProc\onsen\venv4sh\lib\site-packages\shnetutil\projconfig.py
