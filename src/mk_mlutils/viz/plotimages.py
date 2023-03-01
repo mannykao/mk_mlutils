@@ -1,8 +1,17 @@
+# -*- coding: utf-8 -*-
+"""
+Title: unit test for batch.py - 
+	
+Created on Tues Feb 28 16:01:29 2023
+
+@author: Manny Ko 
+"""
 #from pathlib import Path
 import matplotlib.pyplot as plt
 
 #** https://stackoverflow.com/questions/46615554/how-to-display-multiple-images-in-one-figure-correctly
 
+kRepoRoot="mk_mlutils/src/mk_mlutils"
 
 def grid2d(
 	dataset,
@@ -24,8 +33,11 @@ if __name__=='__main__':
 	from mk_mlutils import projconfig
 	from mk_mlutils.pipeline import loadMNIST
 
+	projconfig.setRepoRoot(kRepoRoot, __file__)
+
 	mnistfolder = projconfig.getMNISTFolder()
-	mnist_test = loadMNIST.getdb(mnistfolder, istrain=False, kTensor = False)
+	print(mnistfolder)
+	mnist_test = loadMNIST.getdb(mnistfolder, istrain=False, kFashion=False, kTensor = False)
 
 	grid2d(mnist_test, 5, 2, "MNIST[0:10]")
 

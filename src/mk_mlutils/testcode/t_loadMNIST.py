@@ -1,5 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Title: Context-Manager to support tracing PyTorch execution
 
-#import mk_mlutils.dataset.fashion as fashion
+@author: Manny Ko & Ujjawal.K.Panchal
+"""
+
 import re
 from collections import namedtuple
 from pathlib import Path, PurePosixPath

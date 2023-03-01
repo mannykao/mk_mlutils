@@ -370,10 +370,18 @@ def test_iterObj(mnist_train, bsize, epochs=1):
 	return labels1
 
 def unitestBagging(dataset: dataset_base.DataSet, bsize:int=128, epochs:int=1):
-	test_epochgen(dataset, bsize=256, epochs=1)
-	test_selfIter(dataset, bsize=256, epochs=1)
-	test_iterObj(dataset, bsize=256, epochs=1)
+	labels1 = test_epochgen(dataset, bsize=256, epochs=1)
+	labels2 = test_selfIter(dataset, bsize=256, epochs=1)
+	labels3 = test_iterObj(dataset, bsize=256, epochs=1)
 
+	for i in range(len(labels1)):
+		l1 = labels1[i]
+		l2 = labels2[i]
+		l3 = labels3[i]
+		assert(np.equal(l1, l2).all())
+		assert(np.equal(l1, l3).all())
+	print(f"passed assert(np.equal(l1, l2).all())")	
+	print(f"passed assert(np.equal(l1, l3).all())")	
 
 #
 # BatchCache:
@@ -526,21 +534,5 @@ if __name__ == '__main__':
 	bsize = 1000
 	epochs = 2
 
-	#1: use .epoch() generator interface
-	labels1 = test_epochgen(mnist_train, bsize)
+	unitestBagging(mnist_train, bsize)
 
-	#2: use iter() on the BatchBuilder itself
-	labels2 = test_selfIter(mnist_train, bsize)
-
-	#2: use standalone iterator
-	labels3 = test_iterObj(mnist_train, bsize)
-
-	for i in range(len(labels1)):
-		l1 = labels1[i]
-		l2 = labels2[i]
-		l3 = labels3[i]
-		assert(np.equal(l1, l2).all())
-		assert(np.equal(l1, l3).all())
-	print(f"passed assert(np.equal(l1, l2).all())")	
-	print(f"passed assert(np.equal(l1, l3).all())")	
-		

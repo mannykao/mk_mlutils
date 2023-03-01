@@ -9,6 +9,7 @@ Created on Tues Feb 28 16:01:29 2023
 from collections import namedtuple, Counter
 from pathlib import Path, PurePosixPath
 from typing import List, Tuple, Union, Optional
+import numpy as np
 
 from mk_mlutils import projconfig
 import mk_mlutils.dataset.dataset_base as dataset_base
@@ -17,6 +18,8 @@ import mk_mlutils.dataset.fashion as fashion
 
 import mk_mlutils.pipeline.batch as batch
 import mk_mlutils.pipeline.logutils as logutils
+
+import mk_mlutils.utils.torchutils as torchutils
 
 
 #from ..pipeline import loadMNIST, augmentation, dbaugmentations, trainutils
@@ -81,15 +84,29 @@ def test_iterObj(mnist_train, bsize:int=256, epochs=1):
 		print(labelcnt)	
 	return labels1
 
+def unitestBagging(dataset: dataset_base.DataSet, bsize:int=128, epochs:int=1):
+	#batch.unitestBagging(validateset, bsize=256, epochs=1)
+	labels1 = test_epochgen(dataset, bsize=256, epochs=1)
+	labels2 = test_selfIter(dataset, bsize=256, epochs=1)
+	labels3 = test_iterObj(dataset, bsize=256, epochs=1)
+
+	for i in range(len(labels1)):
+		l1 = labels1[i]
+		l2 = labels2[i]
+		l3 = labels3[i]
+		assert(np.equal(l1, l2).all())
+		assert(np.equal(l1, l3).all())
+	print(f"passed assert(np.equal(l1, l2).all())")	
+	print(f"passed assert(np.equal(l1, l3).all())")	
+
 
 if __name__ == '__main__':
+
+	torchutils.onceInit(kCUDA=True, cudadevice='cuda:1')
+
 	projconfig.setRepoRoot(kRepoRoot, __file__)
 	print(f"{projconfig.getDataFolder()=}")
 
 	train, test, validateset = test_balancedSubset(validate=0.3)
 
-	#batch.unitestBagging(validateset, bsize=256, epochs=1)
-	test_epochgen(validateset, bsize=256, epochs=1)
-	test_selfIter(validateset, bsize=256, epochs=1)
-	test_iterObj(validateset, bsize=256, epochs=1)
-
+	#unitestBagging(validateset, bsize=512)

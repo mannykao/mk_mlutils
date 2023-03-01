@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+"""
+Title: unit test for batch.py - 
+	
+Created on Tues Feb 28 16:01:29 2023
+
+@author: Manny Ko 
+"""
+
 # test importing every file from mk_mlutils
 try:
 	import mk_mlutils
@@ -19,6 +28,10 @@ try:
 
 	import mk_mlutils.pipeline.augmentation as augmentation
 	import mk_mlutils.pipeline.batch as batch
+	import mk_mlutils.pipeline.BigFile as BigFile
+	import mk_mlutils.pipeline.BigFileBuilder as BigFileBuilder
+	import mk_mlutils.pipeline.dbaugmentation as dbaugmentation
+
 #	import mk_mlutils.pipeline.ImagePatcher as ImagePatcher
 	import mk_mlutils.pipeline.logutils as logutils
 	import mk_mlutils.pipeline.modelstats as modelstats
