@@ -39,7 +39,6 @@
 				"venv4mk_mlutils",
 				"build/",
 				"*.egg-info",
-				"data"
 			],
 			"path": "D:\\Dev\\ML\\mk_mlutils"
 		},

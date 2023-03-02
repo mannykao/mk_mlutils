@@ -181,3 +181,8 @@ if __name__ == '__main__':
 
 	for i, item in enumerate(train):
 		assert(xformed_results[i] == item.label)
+
+	#explicit invoke the destructor to free resources	
+	del pool
+
+		

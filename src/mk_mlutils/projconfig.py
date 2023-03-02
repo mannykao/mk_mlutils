@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 """
 
-Title: Shearlet based CNN vs. simple MLP in Fashion MNIST.
+Title: Project folder configuration manager. To have a robust means for code within 
+	   our package as well as client code to locate shared datasets and other folders
+	   - e.g. output/log folders, test result folders etc.
 	
-Created on Mon Mar 16 17:44:29 2020
+Created on Wed Mar 1 17:44:29 2023
 
 @author: Ujjawal.K.Panchal & Manny Ko
 
