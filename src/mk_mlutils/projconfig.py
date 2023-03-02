@@ -19,6 +19,7 @@ from mkpyutils import dirutils
 # anchor for all other files especially datasets, external packages (whl) etc.
 #
 kRepoRoot="mk_mlutils"
+#from kRepoRoot to the sources
 kToSrcRoot="src/mk_mlutils"	#kRepoRoot/kToSrcRoot = "mk_mlutils/src/mk_mlutils"
 
 def getRefFile():

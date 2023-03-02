@@ -25,9 +25,5 @@ setuptools.setup(name='mk_mlutils',
 		"torchsummary",
 		"numpy",
 		"scipy",
-		"cplxmodule",		#this is included here for completeness. We usually do local installs so that the source is accessible.
-        'tensorly>=0.7.0',
-        'tensorly-torch>=0.3.0',
-        't3nsor>=1.0',
 	],
 )

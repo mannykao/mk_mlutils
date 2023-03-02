@@ -20,7 +20,7 @@ import os, sys, time
 #our packages
 #our modules
 
-kUnitTest=False
+kUnitTest=True
 
 #
 # Python Pool.map() in theory solves the same problem as MPPool(). 
@@ -177,50 +177,37 @@ class MPPool(metaclass=abc.ABCMeta):
 		pass
 
 if kUnitTest:
-	from ..pipeline import BigFile
-	from .. import torchutils
-	from shnetutil.dataset import dataset_base
-
-	def time_spent(tic1, tag='', count=1):
-		toc1 = time.time() 
-		print(f"time spend on {tag} method = {(toc1 - tic1)/count:3f}s")
-		return
+	import mk_mlutils.dataset.dataset_base as dataset_base
+	import mk_mlutils.dataset.fashion as fashion
+	import mk_mlutils.utils.torchutils as torchutils
 
 	def xformdataset_serial(
-		sh_xform,
-		dataset,
-		work		#(start, end)
-	):
+		xform,
+		dataset:dataset_base.DataSet,
+		work:tuple		#(start, end)
+	) -> list:
 		""" apply the Shearlet xform defined by 'sh_sys' to 'dataset' """
 		print(f"xformdataset_serial {work}..")
+		assert(type(dataset))
 
-		shearlets = []
-		count = 1
-		#print(f" {sh_xform} using {1} cores")
+		#shearlets = []
+		labels = []
 		
 		start, end = work
 		for i in range(0, end-start):
 			item = dataset[i]
 			img, label = item
 
-			coeffs = sh_xform.xform(item)
-			shearlets.append(coeffs.cpu().numpy())
-			#labels.append(label)
+			#coeffs = sh_xform.xform(item)
+			#shearlets.append(coeffs.cpu().numpy())
+			labels.append(label)
 
-		return shearlets
-
+		return labels
 
 	class Worker(multiprocessing.Process):
-		""" Working example for a concrete worker that performs the actual lifting within each
-			process of the mppool in parallel with load balancing.
-		"""
 		instanceId = 0
 
-		def __init__(self, 
-			queue:multiprocessing.Queue,	#our concurrent queue 
-			send_end:multiprocessing.Pipe,	#pipe for sening signals 
-			workerargs:dict					#client passed per worker options and shared data
-		):
+		def __init__(self, queue, send_end, workerargs):
 			""" This will be executed in the parent process """
 			print(f"Worker() pid {os.getpid()}", flush=True)	#Note: this will be parent's pid		
 		
@@ -245,15 +232,16 @@ if kUnitTest:
 		def qNotDone(cls, work):	
 			return work is not MPPool.kSTOP_VALUE
 
-		def oneChunk(self, sh_xform, work):
-			""" process 1 chunk of work - obtain our subset of the work within 'dataset'
-				and invoke the serial code to process 1 chunk
-			 """	
+		def oneChunk(self, xform, work:tuple) -> tuple:
+			""" process 1 chunk of work """	
 			start, end = work
 			dbchunk = dataset_base.CustomDatasetSlice(self.dataset, ourslice=(start, end-start))
-			shearlets = xformdataset_serial(sh_xform, dbchunk, work)
+			#shearlets = xformdataset_serial(xform, dbchunk, work)
+		
+			#do some processing on 'dbchunk'
+			xformed = xformdataset_serial(xform, dbchunk, work)
 
-			return (work, shearlets)
+			return (work, xformed)
 
 		@staticmethod
 		def checkChunkOutput(output):
@@ -268,17 +256,16 @@ if kUnitTest:
 			"""
 			q = self.queue
 			workerargs = self.workerargs
-			shfactory = workerargs['shfactory'] 
+	#		shfactory = workerargs['shfactory'] 
 			kCUDA = workerargs['CUDA']
 
 			#1: per-core/worker once init:
 			self.onceInit(kCUDA=kCUDA)
 
-			sh_spec, xform_factory = shfactory
-			sh_xform = xform_factory(sh_spec)
-			sh_xform.start(self.device)
-
-			sh_sys = sh_xform.shearletSystem
+	#		sh_spec, xform_factory = shfactory
+	#		sh_xform = xform_factory(sh_spec)
+	#		sh_xform.start(self.device)
+	#		sh_sys = sh_xform.shearletSystem
 			#shearlet_spec = sh_xform.sh_spec
 
 			results = []
@@ -290,7 +277,7 @@ if kUnitTest:
 					print(f" work {work}") 
 
 					#3: record the results in a tuple to be returned to caller
-					output = self.oneChunk(sh_xform, work)
+					output = self.oneChunk(None, work)
 					self.checkChunkOutput(output)
 					results.append(output)					
 				else:
@@ -299,17 +286,18 @@ if kUnitTest:
 					results = []
 					print("  poison-pill")
 					break	#poison-pill
-	#end class Worker
+#end class Worker
 
-	class XformPool(MPPool):
-		""" Controller for transforming a dataset using shearlet xform in parallel using
-			MPPool
-		"""
-		def makeWorker(self, queue, send_end, workerargs):
+	class XformPool(MPPool):	
+		def makeWorker(self, 
+			queue:multiprocessing.Queue, 
+			send_end:multiprocessing.Pipe, 
+			workerargs
+		):
 			""" create one Worker """
 			return Worker(queue, send_end, workerargs)	#this will start running immediately
 
-		def finalize(self, kPersist):
+		def finalize(self, kPersist:bool):
 			results = super().finalize(kPersist)
 			#remove the work tuples to make a final list of outputs 
 			finallist = []
@@ -330,56 +318,33 @@ if kUnitTest:
 					assert((work[1] - work[0]) == len(shearlets))
 				total += count
 			assert(total == self.numentries)
-			return total == self.numentries	
-	#end class XformPool
+			return total == self.numentries
 
-	def prepWorker(workerargs):
-		bigzipped	= workerargs['bigzipped']
-		full_dataset = BigFile.BigChunk(bigzipped)
-		return full_dataset
+	def prepWorker(workerargs:dict):
+		full_dataset = workerargs['full_dataset']
+		full_dataset, test, validateset, *_ = fashion.load_fashion(full_dataset, validate=.3)
+		return full_dataset			
 #end... kUnitTest
 
 
 if (__name__ == '__main__') and kUnitTest:
-	from mk_mlutils import coshrem_xform
-	from mk_mlutils.dataset import dataset_base
+	train, test, validateset, *_ = fashion.load_fashion('train', validate=.3)
+	print(f"{len(train)=}, {len(test)=}, {len(validateset)=}")
 
-	#1. data paths definition.
-	datafolder = "../covid-chestxray-dataset/"
-	data_images = datafolder + "images"
-	meta_data = datafolder + "metadata.csv"
-	outfolder = '../output/'
-	bigzipped = outfolder + 'full-set.dat'
-
-	#2. load our gzipped chunk dataset
-	full_dataset = BigFile.BigChunk(bigzipped)
-
-	start = 0
-	end   = len(full_dataset)
-	dbchunk = dataset_base.CustomDatasetSlice(full_dataset, ourslice=(start, end-start))
-
-	shfactory = (coshrem_xform.ksh_spec, coshrem_xform.CoShXform)
-
-	#3: worker's parameter block - must be marshallable (pickle)
 	workerargs = {
-	#	'data_images' : data_images,
-	#	'meta_data'	 : meta_data,
-		'bigzipped'	 : bigzipped,
-		'chunkfactor': 3,		#divide work finer than n_jobs for better load-balance
-								#1: 23.5, 2: 24.6, 3: 22.8, 4: 22.5 		
-		'shfactory'	 : shfactory,
-		'CUDA'		 : True	#gpu: 22s,   cpu: 43.2s (xvr)
-							#gpu: 15.8s, cpu: 35.2s (bigzipped)
+		'chunkfactor': 	3,		#scheduleWork() use this to divide work finer than n_jobs 
+		'full_dataset': 'train',
+								#for better load-balance
+		'CUDA'		 : 	False,
 	}
-	#4.1: create mp pool
-	mypool = XformPool(4)
+	pool = XformPool(poolsize=2)
+	pool.doit(workerargs, len(train), kPersist=False)
 
-	tic1 = time.time()
-	#asyncio.run( mypool.doit(workerargs, len(dbchunk), kPersist=False) )
-	mypool.doit(workerargs, len(dbchunk), kPersist=False)
+	xformed_results = pool.results
+	print(f"{len(xformed_results)=}")
 
-	time_spent(tic1, f"XformPool '{datafolder}'", count=1)
+	for i, item in enumerate(train):
+		assert(xformed_results[i] == item.label)
 
-	results = mypool.results
-	print(len(results), type(results), f"results[0].shape {results[0].shape}")
-
+	#explicit invoke the destructor to free resources	
+	del pool

@@ -19,10 +19,8 @@ def xformdataset_serial(
 	print(f"xformdataset_serial {work}..")
 	assert(type(dataset))
 
-	shearlets = []
+	#shearlets = []
 	labels = []
-	count = 1
-	#print(f" {sh_xform} using {1} cores")
 	
 	start, end = work
 	for i in range(0, end-start):
@@ -168,8 +166,8 @@ if __name__ == '__main__':
 	print(f"{len(train)=}, {len(test)=}, {len(validateset)=}")
 
 	workerargs = {
-		'full_dataset': 'train',
 		'chunkfactor': 	3,		#scheduleWork() use this to divide work finer than n_jobs 
+		'full_dataset': 'train',
 								#for better load-balance
 		'CUDA'		 : 	False,
 	}
