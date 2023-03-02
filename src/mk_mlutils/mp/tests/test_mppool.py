@@ -124,9 +124,14 @@ def prepWorker(workerargs):
 	return full_dataset
 
 class XformPool(mppool.MPPool):	
-	def makeWorker(self, queue, send_end, workerargs):
+	def makeWorker(self, 
+		queue:multiprocessing.Queue, 
+		send_end:multiprocessing.Pipe, 
+		workerargs:dict
+	) -> multiprocessing.Process:
 		""" create one Worker """
 		return Worker(queue, send_end, workerargs)	#this will start running immediately
+
 
 if (__name__ == '__main__'):
 	from mk_mlutils import coshrem_xform

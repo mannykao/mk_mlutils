@@ -39,7 +39,7 @@ def load_fashion(
 		"mnist":   projconfig.getMNISTFolder(),
 	}
 	datasets_root = dispatch[datasetname]
-	print(datasets_root)
+	#print(datasets_root)
 	train_set = loadMNIST.getdb(datasets_root, istrain=True, kTensor = kTensor)
 	test_set = loadMNIST.getdb(datasets_root, istrain=False, kTensor = kTensor)
 

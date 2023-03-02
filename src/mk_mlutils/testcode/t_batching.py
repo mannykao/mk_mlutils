@@ -101,7 +101,6 @@ def unitestBagging(dataset: dataset_base.DataSet, bsize:int=128, epochs:int=1):
 
 
 if __name__ == '__main__':
-
 	torchutils.onceInit(kCUDA=True, cudadevice='cuda:1')
 
 	projconfig.setRepoRoot(kRepoRoot, __file__)

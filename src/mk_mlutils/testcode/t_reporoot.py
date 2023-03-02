@@ -1,8 +1,5 @@
-import re
 from pathlib import Path, PurePosixPath
-from mkpyutils import dirutils
 from mk_mlutils import projconfig
-
 
 kRepoRoot="mk_mlutils"
 kToSrcRoot="src/mk_mlutils"

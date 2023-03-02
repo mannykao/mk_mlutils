@@ -23,10 +23,11 @@ import os, sys, time
 kUnitTest=False
 
 #
-# Python Pool.map() in theory solves the same problem as MPPool(). The reason we did not adopt:
+# Python Pool.map() in theory solves the same problem as MPPool(). 
+# The reason we did not adopt:
 #   1. no concept of per-core/worker onceInit()
 #	2. work has to be marshalled across processes:
-#	   work = (["A", 5], ["B", 2], ["C", 1], ["D", 3]) 		#our giant dataset
+#	   work = (["A", 5], ["B", 2], ["C", 1], ["D", 3]) 		#["A", 5] is one slice of our giant dataset
 #	   p = Pool(2)
 #	   p.map(worker, work)		#'worker' and 'work' are marshalled 
 #
@@ -39,12 +40,18 @@ def get_chunk(numentries:int, numjobs:int):
 class MPPool(metaclass=abc.ABCMeta):
 	""" A pool of processes to run async workers with load balancing 
 		- it behaves like persistent-threads where 
-		  a) each core is occupied by one 'worker'
-		  b) each worker pull work from a shared queue and are otherwise blocked.
+		  a) each core is occupied by one 'worker' created by makeWorker()
+		  b) each worker pull work from a single shared queue and are otherwise blocked.
 		  c) each worker sends its result using a Pipe (lighter than a Queue)
 		  d) doit() method perform load-balancing by dividing the work into work-items, using
 		     the concept of 'chunkfactor' - which is the the factor we mulitply n_jobs with to
 		     divide the input into chunks. The chunks are pushed onto the queue.
+		  e) each worker is invoked with the queue and its allocation of workitems.
+		     Since these are marshalled across processes they should be compact and 
+		     marshallable.
+	Usage:	     	
+		1) Derive from MPPool and implement the abstract method makeWorker() - e.g. XformPool.
+		2) mp/tests/test_mppool.py 
 	"""
 	kSTOP_VALUE = None 		#our poison-pill to stop workers when popped from queue
 
@@ -111,7 +118,8 @@ class MPPool(metaclass=abc.ABCMeta):
 			if p.is_alive():
 				self.queue.put(MPPool.kSTOP_VALUE)		#poison-pill to tell workers to break out
 
-	def scheduleWork(self, numentries:int, workerargs:dict, kPersist=False):	
+	def scheduleWork(self, numentries:int, workerargs:dict, kPersist=False):
+		""" divide the input into 'chunkfactor' sized workitems and push onto the queue """
 		print(f" pid[{os.getpid()}] using {self.poolsize} cores to process {numentries}", flush=True)
 
 		queue = self.queue
@@ -132,6 +140,7 @@ class MPPool(metaclass=abc.ABCMeta):
 			self.stopWorkers()
 
 	def doit(self, workerargs:dict, numentries:int, kPersist:bool=False):
+		""" initiated the parallel processing and wait for all workers """
 		self.onceInit(workerargs)
 		self.scheduleWork(numentries, workerargs, kPersist)
 		
@@ -202,9 +211,16 @@ if kUnitTest:
 
 
 	class Worker(multiprocessing.Process):
+		""" Working example for a concrete worker that performs the actual lifting within each
+			process of the mppool in parallel with load balancing.
+		"""
 		instanceId = 0
 
-		def __init__(self, queue, send_end, workerargs):
+		def __init__(self, 
+			queue:multiprocessing.Queue,	#our concurrent queue 
+			send_end:multiprocessing.Pipe,	#pipe for sening signals 
+			workerargs:dict					#client passed per worker options and shared data
+		):
 			""" This will be executed in the parent process """
 			print(f"Worker() pid {os.getpid()}", flush=True)	#Note: this will be parent's pid		
 		
@@ -230,7 +246,9 @@ if kUnitTest:
 			return work is not MPPool.kSTOP_VALUE
 
 		def oneChunk(self, sh_xform, work):
-			""" process 1 chunk of work """	
+			""" process 1 chunk of work - obtain our subset of the work within 'dataset'
+				and invoke the serial code to process 1 chunk
+			 """	
 			start, end = work
 			dbchunk = dataset_base.CustomDatasetSlice(self.dataset, ourslice=(start, end-start))
 			shearlets = xformdataset_serial(sh_xform, dbchunk, work)
@@ -283,7 +301,10 @@ if kUnitTest:
 					break	#poison-pill
 	#end class Worker
 
-	class XformPool(MPPool):	
+	class XformPool(MPPool):
+		""" Controller for transforming a dataset using shearlet xform in parallel using
+			MPPool
+		"""
 		def makeWorker(self, queue, send_end, workerargs):
 			""" create one Worker """
 			return Worker(queue, send_end, workerargs)	#this will start running immediately

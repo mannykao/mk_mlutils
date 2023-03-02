@@ -12,7 +12,7 @@ print(f"{packages=}")
 
 setuptools.setup(name='mk_mlutils',
 	version='1.3',
-	description='Complex Shearlet and Torch Utilities',
+	description='ML and Torch Utilities',
 	author='Manny Ko',
 	author_email='man960@hotmail.com',
 	#url='https://www.python.org/sigs/distutils-sig/',
@@ -21,7 +21,8 @@ setuptools.setup(name='mk_mlutils',
 	package_data={'': ['bases/*.npy']},
 
 	install_requires=[
-		"torch>=1.9",		#cuda 11.1 we are using complexFloat 
+		"torch>=1.9",		#cuda 11.1 we are using complexFloat
+		"torchsummary",
 		"numpy",
 		"scipy",
 		"cplxmodule",		#this is included here for completeness. We usually do local installs so that the source is accessible.
