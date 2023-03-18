@@ -33,7 +33,7 @@ setuptools.setup(name='mk_mlutils',
 		"pydantic",
 		"scipy",
 		"torch==1.13.1",		#temporarily pinned to this version until we sort it out
-#		"torchvision",
+		"torchvision",
 		"torchsummary", 
 	],
 )

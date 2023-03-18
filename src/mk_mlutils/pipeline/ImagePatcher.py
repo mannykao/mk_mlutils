@@ -14,7 +14,7 @@ from multiprocessing import Pool, Process, current_process
 import warnings
 
 #our imports.
-from patching import find_patch
+from .patching import find_patch
 
 
 class ImagePatcher():

@@ -7,10 +7,6 @@ from collections import Counter
 
 #our packages
 from . import BigFile, BigFileBuilder, combine_sh
-from .. import torchutils 
-#our modules
-#import loadFashion, shsys_def
-#import 
 
 class BigFileBuilderMP():
 	""" parallel applying 'xform' to chunks of 'dataset' -> BigFile in each worker """
