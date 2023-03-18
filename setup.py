@@ -32,7 +32,7 @@ setuptools.setup(name='mk_mlutils',
 		"pillow",			#PIL
 		"pydantic",
 		"scipy",
-		"torch>=1.9",		#cuda 11.1 we are using complexFloat
+		"torch==1.13.1",		#temporarily pinned to this version until we sort it out
 #		"torchvision",
 		"torchsummary", 
 	],

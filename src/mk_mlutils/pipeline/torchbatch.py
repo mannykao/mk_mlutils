@@ -10,6 +10,7 @@ Created on Mon Mar 16 17:44:29 2020
 """
 import numpy as np
 import torch
+from typing import Tuple, Callable, Iterable, List, Any, Dict, Union
 
 from . import batch
 
@@ -31,19 +32,21 @@ def batch2device(device, imglist, labels, non_blocking=True):
 	labels = labels.to(device, non_blocking=non_blocking)
 	return imglist, labels
 
-def getBatchAsync(device, dbchunk, batchindices, xform = NullXform, logging=False):
+def getBatchAsync(
+	device, 
+	dbchunk, 
+	batchindices, 
+	imgXform:Callable = NullXform, 
+	labelXform:Callable = NullXform, 
+	logging:bool=False
+):
 	""" Torch version of getBatchAsync() - transpose the imglist and sent to device """
 	#1. get batch.
-	imglist, labels = batch.getBatchAsync(dbchunk, batchindices, logging)
+	imglist, labels = batch.getBatchAsync(dbchunk, batchindices, imgXform, labelXform, logging)
 
-	assert(labels.dtype == np.int64)
-
-	#2. apply xforms.
-	#imglist = xform(np.asarray(imglist))
-	imglist = xform(imglist)
-	labels = torch.tensor(labels, dtype = torch.long)	#dtype = torch.long should be a noop
+	imglist = imglist
+	labels = torch.tensor(labels) #EDIT: dtype brought out.
 	#3. send to device
 	imglist, labels = batch2device(device, imglist, labels)
 	return imglist, labels
-
 

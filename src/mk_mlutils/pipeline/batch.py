@@ -14,6 +14,7 @@ import os, sys, time
 import abc
 import numpy as np
 from collections import namedtuple, Counter
+from typing import Tuple, Callable, Iterable, List, Any, Dict, Union
 import asyncio
 
 #our modules
@@ -269,7 +270,13 @@ GetDesc = namedtuple("GetDesc", "index data")
 async def get1(dataset, index):
 	return GetDesc(index, dataset[index])	#tuple(index, BigFile.ImageDesc)
 
-async def getBatch(dataset, indices, logging=False):
+async def getBatch(
+	dataset, 
+	indices:np.ndarray, 
+	imgXform:Callable = NullXform, 
+	labelXform:Callable = NullXform, 
+	logging=False
+):
 	batchsize = len(indices)
 	imglist = []	#for collecting the results from async complete callback
 	labellist = []
@@ -278,7 +285,7 @@ async def getBatch(dataset, indices, logging=False):
 		#https://stackoverflow.com/questions/44345139/python-asyncio-add-done-callback-with-async-def
 		myresult = task.result()
 		imglist.append(myresult.data.coeffs)
-		labellist.append(np.int64(myresult.data.label))	# Torch seems to want labels as torch.long which is int64
+		labellist.append(myresult.data.label)	# Torch seems to want labels as torch.long which is int64
 
 	#1: sort indices to get a sequential access order - optimize IO
 	batch = np.sort(indices)
@@ -304,13 +311,19 @@ async def getBatch(dataset, indices, logging=False):
 		verify2result(myresults, myresults2)
 
 	#TODO: change get1() to directly output to a ndarray
-	return np.asarray(imglist), np.asarray(labellist)
+	return imgXform(imglist), labelXform(labellist)
 
-def getBatchAsync(dbchunk, batch, logging=False):
+def getBatchAsync(
+	dbchunk,
+	batch,
+	imgXform:Callable = NullXform,
+	labelXform:Callable = NullXform,
+	logging=False
+):
 	""" get 'batch' which is an array of indices 
 		Ret: ndarray((batchsize, width, height), dtype=float32)
 	"""
-	results = asyncio.run(getBatch(dbchunk, batch, logging))
+	results = asyncio.run(getBatch(dbchunk, batch, imgXform, labelXform, logging))
 	return results
 
 #
