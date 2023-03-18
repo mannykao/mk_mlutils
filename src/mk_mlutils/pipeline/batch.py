@@ -36,6 +36,20 @@ kVerifyResults=False
 
 # https://pymotw.com/3/asyncio/executors.html
 
+class NullXform(object):
+	""" Null xform 
+	---import shnetutil.cplx as shcplx
+
+	Args: (N/A).
+
+	"""
+	def __init__(self, **kwargs):
+		self.kwargs = kwargs
+		pass
+
+	def __call__(self, sample):
+		return sample
+
 class BatchBuilderBase(metaclass=abc.ABCMeta):
 	""" An batch generator with support for asyncio and MP xform/augmentation,
 		data echoing etc.

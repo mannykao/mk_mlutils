@@ -25,5 +25,6 @@ setuptools.setup(name='mk_mlutils',
 		"torchsummary",
 		"numpy",
 		"scipy",
+		"funcsigs",
 	],
 )
