@@ -9,6 +9,8 @@ Created on Sun Mar 19 7:01:29 2023
 from pathlib import Path, PurePosixPath, PureWindowsPath, PurePath
 from typing import Tuple, Callable, Iterable, List, Any, Dict, Union
 
+from mkpyutils import folderiter
+
 
 #https://stackoverflow.com/questions/6677424/how-do-i-import-variable-packages-in-python-like-using-variable-variables-i
 def import1(path:str, module:str, logging=True) -> object:
@@ -31,13 +33,22 @@ def importFiles(path:Union[str, Path], modules:list, logging=True) -> List[objec
 		imports.append(import1(path, module, logging=logging))
 	return imports	
 
-def importFolder(path:Path, folder:Union[str, Path], logging=True):
+def importFolder(path:Path, folder:Union[str, Path], logging:bool=True):
+	skip = {'__init__', }
+
+	def filefilter(file:str) -> bool:
+		result = folderiter.deffile_filter(file) and (file not in skip)
+		return result
+
 	if logging: print(f"{folder}")
 	files = []
-	for file in list(folder.glob('*')):
-		files.append(Path(file.name).stem)
+	for file in list(folder.glob('*.py')):
+		filename = Path(file.name).stem
+		if filefilter(filename):
+			print(f" {filename=}")
+			files.append(filename)
 	modules = importFiles(path, files, logging=logging)
-	print(f"{modules=}")	
+	#print(modules)	
 	return modules
 
 

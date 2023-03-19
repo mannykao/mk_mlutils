@@ -28,12 +28,12 @@ setuptools.setup(name='mk_mlutils',
 	package_data={'': ['bases/*.npy']},
 	python_requires='>=3.8',
 	install_requires=[
-#		"numpy",
-#		"pillow",			#PIL
-#		"pydantic",
-#		"scipy",
-#		"torch==1.13.1",		#temporarily pinned to this version until we sort it out
-#		"torchvision",
-#		"torchsummary", 
+		"numpy",
+		"pillow",			#PIL
+		"pydantic",
+		"scipy",
+		"torch==1.13.1",		#temporarily pinned to this version until we sort it out
+		"torchvision",
+		"torchsummary", 
 	],
 )
