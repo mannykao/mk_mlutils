@@ -21,15 +21,24 @@ def import1(path:str, module:str, logging=True) -> object:
 	else:
 		if logging:
 			print(f"Succeeded importing '{path}.{module}'")
-			print(f"{ dir(imported)=}")
+			print(f"  {dir(imported)}")
 
 	return imported
 
-def importFiles(path:Union[str, Path], modules:list) -> List[object]:
+def importFiles(path:Union[str, Path], modules:list, logging=True) -> List[object]:
 	imports = []
 	for module in modules:
-		imports.append(import1(path, module))
+		imports.append(import1(path, module, logging=logging))
 	return imports	
+
+def importFolder(path:Path, folder:Union[str, Path], logging=True):
+	if logging: print(f"{folder}")
+	files = []
+	for file in list(folder.glob('*')):
+		files.append(Path(file.name).stem)
+	modules = importFiles(path, files, logging=logging)
+	print(f"{modules=}")	
+	return modules
 
 
 if __name__ == "__main__":
