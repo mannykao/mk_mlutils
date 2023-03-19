@@ -21,10 +21,7 @@ from scipy import ndimage
 
 from .patching import get_mp_patches, find_patch
 
-from .. import coshrem_xform
-from cplxmodule import cplx
-
-from ..cplx import utils as shcplxutils
+kUseCplx=False		#enable cplx and CoShRem dependent code - mck
 
 
 def transpose4Np(imgList):
@@ -63,12 +60,6 @@ def transpose4Torch(imgList):
 		new_dims.extend(channel_dims)
 		new_dims.extend(bottom_dims)
 		imgList = imgList.permute(*new_dims) #args to open new_dims list.
-	return imgList
-
-def transpose4Cplex(imgList):	
-	imgListReal = transpose4Torch(imgList.real)
-	imgListImag = transpose4Torch(imgList.imag)
-	imgList = cplx.Cplx(imgListReal, imgListImag)
 	return imgList
 
 
@@ -503,74 +494,86 @@ class Sequential(Base):
 				index = i
 		return index		
 
-class CoShREM(Base):
-	"""
-	A class for implementing CoShREM based edge and ridge detector [1].
-	---
-	ref:
-		[1]. Reisenhofer R., King E. (2019). Edge, Ridge and Blob detection with symmetric molecules.  
-	---
-	Args:
-		1. **kwargs corresponding to ksh_spec for your Shearlet system.
-			1.a. rows: H of the input matrix.
-			1.b. cols: W of the input matrix.
-			1.c. scales_per_octave: number of scales in frequency octaves.
-			1.d. octaves: number of octaves.
-			1.e. alpha: coefficient determining level of anisotropy. 
-						0 -> wavelets, 
-						0.5 -> shearlets, 
-						1 -> ridgelets... etc.
-	"""
-	def __init__(self, 
-		device = "cuda", 
-		tocplx = False, 
-		topolar = False, phase_first = False, 
-		colorspace = "grayscale",
-		coshrem_config = coshrem_xform.ksh_spec.copy(),
-	):
-		color2dims = {
-			"grayscale": 1,
-			"lum_lab": 1,
-			"rgb": 3,
-			"lab": 3,
-		}
-		self.device = device
-		self.ksh_spec = coshrem_config
-		self.coshxform = coshrem_xform.CoShXform(
-									self.ksh_spec, tocplx = tocplx,
-									topolar = topolar, phase_first = phase_first
-						)
-		self.coshxform.start(device)
-		self.coshxform.color_aware_xform = self.graybatch_xform if color2dims[colorspace] == 1 else self.colorbatch_xform
-		return
+if kUseCplx:
+	from .. import coshrem_xform
+	from cplxmodule import cplx
 
-	def __call__(self, x):
-		return self.coshxform.color_aware_xform(x)
+	from ..cplx import utils as shcplxutils
 
-	def graybatch_xform(self, x):
-		""" 1-channel xform """
-		x = self.coshxform.batch_xform(x)
-		return x
+	def transpose4Cplex(imgList):	
+		imgListReal = transpose4Torch(imgList.real)
+		imgListImag = transpose4Torch(imgList.imag)
+		imgList = cplx.Cplx(imgListReal, imgListImag)
+		return imgList
 
-	def colorbatch_xform(self, x):
-		""" 3-channel xform """
-		l1_real, l1_imag = [], []
-		for i in range(x.shape[-1]):
-			z = self.coshxform.batch_xform(x[...,i])
-			l1_real.append(z.real)
-			l1_imag.append(z.imag)
-		x_real = torch.cat(l1_real, dim = 3)
-		x_imag = torch.cat(l1_imag, dim = 3)
-		x = cplx.Cplx(x_real, x_imag)
-		return x
+	class CoShREM(Base):
+		"""
+		A class for implementing CoShREM based edge and ridge detector [1].
+		---
+		ref:
+			[1]. Reisenhofer R., King E. (2019). Edge, Ridge and Blob detection with symmetric molecules.  
+		---
+		Args:
+			1. **kwargs corresponding to ksh_spec for your Shearlet system.
+				1.a. rows: H of the input matrix.
+				1.b. cols: W of the input matrix.
+				1.c. scales_per_octave: number of scales in frequency octaves.
+				1.d. octaves: number of octaves.
+				1.e. alpha: coefficient determining level of anisotropy. 
+							0 -> wavelets, 
+							0.5 -> shearlets, 
+							1 -> ridgelets... etc.
+		"""
+		def __init__(self, 
+			device = "cuda", 
+			tocplx = False, 
+			topolar = False, phase_first = False, 
+			colorspace = "grayscale",
+			coshrem_config = coshrem_xform.ksh_spec.copy(),
+		):
+			color2dims = {
+				"grayscale": 1,
+				"lum_lab": 1,
+				"rgb": 3,
+				"lab": 3,
+			}
+			self.device = device
+			self.ksh_spec = coshrem_config
+			self.coshxform = coshrem_xform.CoShXform(
+										self.ksh_spec, tocplx = tocplx,
+										topolar = topolar, phase_first = phase_first
+							)
+			self.coshxform.start(device)
+			self.coshxform.color_aware_xform = self.graybatch_xform if color2dims[colorspace] == 1 else self.colorbatch_xform
+			return
 
-	def __str__(self):
-		return str(self.coshxform)	
+		def __call__(self, x):
+			return self.coshxform.color_aware_xform(x)
 
-	@property
-	def RMS(self):
-		shearlets, shearletidxs, ourRMS, *_ = self.coshxform._shearletSystem
-		return ourRMS
+		def graybatch_xform(self, x):
+			""" 1-channel xform """
+			x = self.coshxform.batch_xform(x)
+			return x
+
+		def colorbatch_xform(self, x):
+			""" 3-channel xform """
+			l1_real, l1_imag = [], []
+			for i in range(x.shape[-1]):
+				z = self.coshxform.batch_xform(x[...,i])
+				l1_real.append(z.real)
+				l1_imag.append(z.imag)
+			x_real = torch.cat(l1_real, dim = 3)
+			x_imag = torch.cat(l1_imag, dim = 3)
+			x = cplx.Cplx(x_real, x_imag)
+			return x
+
+		def __str__(self):
+			return str(self.coshxform)	
+
+		@property
+		def RMS(self):
+			shearlets, shearletidxs, ourRMS, *_ = self.coshxform._shearletSystem
+			return ourRMS
 
 class GaussianNoise(Base):
 	"""
@@ -607,46 +610,6 @@ class GaussianBlur(Base):
 	def __call__(self, x):
 		x = ndimage.gaussian_filter(x, sigma = self.ran.uniform(0.0, self.max_sigma))
 		return x
-
-
-class Denoise(Base):
-	"""
-	Class to implement one-step hard thresholding using the RMS for Sh Coeff. 
-	Denoising.
-
-	"""
-	def __init__(self, thresholdingFactor, RMS, sigma = 0.00712, device = 'cpu', enablestats=True):
-		self.thresholdingFactor = thresholdingFactor
-		self.RMS = RMS
-		self.sigma = sigma
-		self.device = device
-		self.enablestats = enablestats
-		self.zeros = 0
-		self.total = 0
-#		print(f"Denoise(sigma {sigma})")
-
-	def __call__(self, x):
-		if self.sigma is None:
-			self.sigma = restoration.estimate_sigma(cplx.to_concatenated_real(x.clone()).cpu().numpy())
-		#print(f"sigma {self.sigma}")
-		#T = self.thresholdingFactor * self.RMS * torch.ones(x.shape, requires_grad=False) * self.sigma
-		T = self.thresholdingFactor * self.RMS * np.ones(x.shape) * self.sigma 	#for now keep np.ones() because the above has small numerical difference
-
-		torch_T = torch.tensor(T[np.newaxis,:,:,:]).to(self.device)
-		torch_mag, torch_phase = shcplxutils.cplx_complex2magphase(x)
-
-		torch_mag_denoised = torch.relu(torch.relu(torch_mag-torch_T)).float().squeeze(0)
-
-		if self.enablestats:
-			coeffs_numpy = torch_mag_denoised.cpu().numpy()
-			self.total += coeffs_numpy.size
-			self.zeros += (coeffs_numpy.size - np.count_nonzero(coeffs_numpy))
-
-		torch_coeffs_denoised = shcplxutils.cplx_magphase2complex(torch_mag_denoised, torch_phase)
-		return torch_coeffs_denoised
-
-	def __str__(self):
-		return f"Denoise(sigma={self.sigma})"	
 
 
 class MinMaxScaler(Base):
@@ -687,24 +650,97 @@ class Normalize(Base):
 	def __str__(self):
 		return f"Normalize({self.mean}, {self.std})"	
 
-class ComplexNormalize(Base):
-	"""
-	Complex Normalization of the given image.
-	x:= a+ib;
-	mag:= sqrt(a^2 + b^2);
-	x = x/mag = a/mag + i (b/mag)
-	
-	---
-	Args:
-		1. avg_mag := estimate of the average magnitude with which to normalize.
-	"""
-	def __init__(self, avg_mag):
-		self.avg_mag = avg_mag
+if kUseCplx:
+	class Denoise(Base):
+		"""
+		Class to implement one-step hard thresholding using the RMS for Sh Coeff. 
+		Denoising.
 
-	def __call__(self, cplxnums):
-		real = cplxnums.real / self.avg_mag
-		imag = cplxnums.imag / self.avg_mag
-		return cplx.Cplx(real, imag)
+		"""
+		def __init__(self, thresholdingFactor, RMS, sigma = 0.00712, device = 'cpu', enablestats=True):
+			self.thresholdingFactor = thresholdingFactor
+			self.RMS = RMS
+			self.sigma = sigma
+			self.device = device
+			self.enablestats = enablestats
+			self.zeros = 0
+			self.total = 0
+	#		print(f"Denoise(sigma {sigma})")
+
+		def __call__(self, x):
+			if self.sigma is None:
+				self.sigma = restoration.estimate_sigma(cplx.to_concatenated_real(x.clone()).cpu().numpy())
+			#print(f"sigma {self.sigma}")
+			#T = self.thresholdingFactor * self.RMS * torch.ones(x.shape, requires_grad=False) * self.sigma
+			T = self.thresholdingFactor * self.RMS * np.ones(x.shape) * self.sigma 	#for now keep np.ones() because the above has small numerical difference
+
+			torch_T = torch.tensor(T[np.newaxis,:,:,:]).to(self.device)
+			torch_mag, torch_phase = shcplxutils.cplx_complex2magphase(x)
+
+			torch_mag_denoised = torch.relu(torch.relu(torch_mag-torch_T)).float().squeeze(0)
+
+			if self.enablestats:
+				coeffs_numpy = torch_mag_denoised.cpu().numpy()
+				self.total += coeffs_numpy.size
+				self.zeros += (coeffs_numpy.size - np.count_nonzero(coeffs_numpy))
+
+			torch_coeffs_denoised = shcplxutils.cplx_magphase2complex(torch_mag_denoised, torch_phase)
+			return torch_coeffs_denoised
+
+		def __str__(self):
+			return f"Denoise(sigma={self.sigma})"
+
+
+	class ComplexNormalize(Base):
+		"""
+		Complex Normalization of the given image.
+		x:= a+ib;
+		mag:= sqrt(a^2 + b^2);
+		x = x/mag = a/mag + i (b/mag)
+		
+		---
+		Args:
+			1. avg_mag := estimate of the average magnitude with which to normalize.
+		"""
+		def __init__(self, avg_mag):
+			self.avg_mag = avg_mag
+
+		def __call__(self, cplxnums):
+			real = cplxnums.real / self.avg_mag
+			imag = cplxnums.imag / self.avg_mag
+			return cplx.Cplx(real, imag)
+
+
+	class NoShAblation(object):
+		"""
+		Repeat the object n times, make it cplx and pass it through the network, to replicate shearlet output dimension.
+		---
+		Args:
+			1. n_channels = number of channels in the output cplx object.
+		"""
+		def __init__(self, n_channels: int = 10, device = "cpu", real = False):
+			self.n_channels = n_channels
+			self.device = device
+			self.real = real
+
+		def make_nChannelComplex(self, x):
+			x_real, x_imag = torch.stack(self.n_channels * [torch.tensor(x).clone().to(self.device)], dim = -1),\
+							 torch.stack(self.n_channels * [torch.tensor(x).clone().to(self.device)], dim = -1)
+			x_cplx = cplx.Cplx(x_real, x_imag)
+			return x_cplx
+
+		def make_nChannelReal(self, x):
+			x = torch.stack(self.n_channels * [torch.tensor(x).clone().to(self.device)], dim = -1)
+			return x 
+			
+		def __call__(self, x):
+			if self.real:
+				x = self.make_nChannelReal(x)
+			else:
+				x = self.make_nChannelComplex(x)
+			return x
+#end of kUseCplx
+
 
 class RgbExtract(Base):
 	"""
@@ -765,36 +801,6 @@ class RepeatDepth(object):
 		self.device = device
 	def __call__(self, x):
 		x = torch.stack(self.n_times * [torch.tensor(x).clone().to(self.device)], dim = -1)
-		return x
-
-
-class NoShAblation(object):
-	"""
-	Repeat the object n times, make it cplx and pass it through the network, to replicate shearlet output dimension.
-	---
-	Args:
-		1. n_channels = number of channels in the output cplx object.
-	"""
-	def __init__(self, n_channels: int = 10, device = "cpu", real = False):
-		self.n_channels = n_channels
-		self.device = device
-		self.real = real
-
-	def make_nChannelComplex(self, x):
-		x_real, x_imag = torch.stack(self.n_channels * [torch.tensor(x).clone().to(self.device)], dim = -1),\
-						 torch.stack(self.n_channels * [torch.tensor(x).clone().to(self.device)], dim = -1)
-		x_cplx = cplx.Cplx(x_real, x_imag)
-		return x_cplx
-
-	def make_nChannelReal(self, x):
-		x = torch.stack(self.n_channels * [torch.tensor(x).clone().to(self.device)], dim = -1)
-		return x 
-		
-	def __call__(self, x):
-		if self.real:
-			x = self.make_nChannelReal(x)
-		else:
-			x = self.make_nChannelComplex(x)
 		return x
 
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Title: test import of mk_mlutils 
+Title: test import of mk_mlutils.pipeline
 	
 Created on Wed Feb 8 7:01:29 2023
 
@@ -13,6 +13,27 @@ except:
 	print("Failed to import package 'mk_mlutils'")
 else:
 	print("Succeeded importing 'mk_mlutils'")
+	print(f"{dir(mk_mlutils)=}")
+
+modules =[
+	'batch',
+	'BigFile',
+	'BigFileBuilder',
+	'bigfilebuildermp',
+	'ImagePatcher',
+#	import mk_mlutils.pipeline.loadCIFAR as loadCIFAR		#use augmentation
+	'loadMNIST',
+	'logutils',
+	'mixup',
+	'patching',
+#	import mk_mlutils.pipeline.modelstats as modelstats		#has 'cplx'
+	'roc',
+	'torchbatch',
+#	import mk_mlutils.pipeline.trainutils as trainutils		#has CoShREM etc.
+	'ourlogger',
+	'torchutils',
+#	'trace',
+]
 
 try:
 #	import mk_mlutils.augmentation as augmentation			#has 'cplx'
@@ -39,7 +60,6 @@ except:
 else:
 	print("Succeeded importing 'mk_mlutils.patching'")
 
-print(f"{dir(mk_mlutils)=}")
 
 #2: check to see if the modules are imported successfully
 #print(f"{dir(augmentation)=}")
