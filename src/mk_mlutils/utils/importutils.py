@@ -11,7 +11,7 @@ from typing import Tuple, Callable, Iterable, List, Any, Dict, Union
 
 
 #https://stackoverflow.com/questions/6677424/how-do-i-import-variable-packages-in-python-like-using-variable-variables-i
-def import1(path:str, module:str) -> object:
+def import1(path:str, module:str, logging=True) -> object:
 	#'from os import path as imported'
 	imported = None
 	try:
@@ -19,8 +19,9 @@ def import1(path:str, module:str) -> object:
 	except:
 		print(f"** Failed to import package '{path}.{module}'")
 	else:
-		print(f"Succeeded importing '{path}.{module}'")
-		print(f"{ dir(imported)=}")
+		if logging:
+			print(f"Succeeded importing '{path}.{module}'")
+			print(f"{ dir(imported)=}")
 
 	return imported
 

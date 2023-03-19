@@ -17,7 +17,7 @@ packages=find_packages(where='src')
 print(f"{packages=}")
 
 setuptools.setup(name='mk_mlutils',
-	version='1.0',
+	version='1.1',
 	description='ML and PyTorch Utilies',
 	author='Manny Ko',
 	author_email='man960@hotmail.com',
@@ -28,12 +28,12 @@ setuptools.setup(name='mk_mlutils',
 	package_data={'': ['bases/*.npy']},
 	python_requires='>=3.8',
 	install_requires=[
-		"numpy",
-		"pillow",			#PIL
-		"pydantic",
-		"scipy",
-		"torch==1.13.1",		#temporarily pinned to this version until we sort it out
-		"torchvision",
-		"torchsummary", 
+#		"numpy",
+#		"pillow",			#PIL
+#		"pydantic",
+#		"scipy",
+#		"torch==1.13.1",		#temporarily pinned to this version until we sort it out
+#		"torchvision",
+#		"torchsummary", 
 	],
 )

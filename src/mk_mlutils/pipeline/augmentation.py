@@ -23,6 +23,12 @@ from .patching import get_mp_patches, find_patch
 
 kUseCplx=False		#enable cplx and CoShRem dependent code - mck
 
+if kUseCplx:
+	from .. import coshrem_xform
+	from cplxmodule import cplx
+
+	from ..cplx import utils as shcplxutils
+
 
 def transpose4Np(imgList):
 	if (len(imgList.shape) == 3): #for gray imgs.
@@ -61,6 +67,13 @@ def transpose4Torch(imgList):
 		new_dims.extend(bottom_dims)
 		imgList = imgList.permute(*new_dims) #args to open new_dims list.
 	return imgList
+
+if kUseCplx:
+	def transpose4Cplex(imgList):	
+		imgListReal = transpose4Torch(imgList.real)
+		imgListImag = transpose4Torch(imgList.imag)
+		imgList = cplx.Cplx(imgListReal, imgListImag)
+		return imgList
 
 
 class NumpyToTorchTensor(object):
@@ -112,11 +125,18 @@ class ToTorchDims(object):
 		return self.toTorchDims(imglist)
 
 	#dispatch table for toTorchDims()	
-	dispatch = {
-		np.ndarray: 	transpose4Np,
-		torch.Tensor: 	transpose4Torch,
-		cplx.Cplx:		transpose4Cplex,
-	}	
+	if kUseCplx:		
+		dispatch = {
+			np.ndarray: 	transpose4Np,		#Note: Python type object us hashable
+			torch.Tensor: 	transpose4Torch,	#Note: Python type object us hashable
+			cplx.Cplx: 		transpose4Cplex,
+		}	
+	else:
+		dispatch = {
+			np.ndarray: 	transpose4Np,		#Note: Python type object us hashable
+			torch.Tensor: 	transpose4Torch,	#Note: Python type object us hashable
+		}	
+		
 	def toTorchDims(self, imgList):
 		"""
 		Transpose of batch for training on torch.
@@ -495,17 +515,6 @@ class Sequential(Base):
 		return index		
 
 if kUseCplx:
-	from .. import coshrem_xform
-	from cplxmodule import cplx
-
-	from ..cplx import utils as shcplxutils
-
-	def transpose4Cplex(imgList):	
-		imgListReal = transpose4Torch(imgList.real)
-		imgListImag = transpose4Torch(imgList.imag)
-		imgList = cplx.Cplx(imgListReal, imgListImag)
-		return imgList
-
 	class CoShREM(Base):
 		"""
 		A class for implementing CoShREM based edge and ridge detector [1].
@@ -574,6 +583,8 @@ if kUseCplx:
 		def RMS(self):
 			shearlets, shearletidxs, ourRMS, *_ = self.coshxform._shearletSystem
 			return ourRMS
+#endif of CoShREM
+
 
 class GaussianNoise(Base):
 	"""

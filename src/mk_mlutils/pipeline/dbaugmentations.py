@@ -14,10 +14,10 @@ from pydantic import BaseModel
 import time
 from typing import List, Tuple, Dict, Union, Optional
 
-from mk_mlutils.coshrem_xform import ksh_spec
 from mk_mlutils.pipeline import batch, augmentation
 from mkpyutils.testutil import time_spent
 
+kUseCplx=False
 
 class CaptureAugmentation(augmentation.NullXform):
 	""" Capture the result of a certain stage in our augmentation pipeline """
@@ -74,40 +74,52 @@ def locate(auglist:list, target:augmentation.Base) -> int:
 			index = i
 	return index
 
-def CoShNetAugmentations(
-	mean, std, 
-	additional_xforms = None,
-	batchsize:int = 512,
-	denoise = False,
-	device = 'cuda',
-	coshrem_args: BaseModel = ksh_spec,
-) -> augmentation.Sequential:
-	""" The standard augmentation pipeline we use for our training CoShNet """
-	coshrem_args = ksh_spec if coshrem_args == None else coshrem_args
-	auglist = [
-		augmentation.Normalize(mean, std),		#10K1E: 79.7%, 10K4E: 86.9%, 10K10E: 87.6%	
-		augmentation.Pad([(0,0), (2,2), (2,2)]),		  
-		augmentation.CoShREM(coshrem_config = coshrem_args, device = device, tocplx = True),
-		augmentation.ToTorchDims(),
-		CaptureAugmentation(batchsize=batchsize),
-	]
-	if denoise:
-		stage_idx = locate(auglist, augmentation.CoShREM)
-		assert(stage_idx != -1)
-		if (stage_idx != -1):
-			sigma, RMS = 0.00712, auglist[stage_idx].RMS
-			denoiser = augmentation.Denoise(thresholdingFactor=3, RMS=RMS, sigma=sigma, device=device)
-			auglist.insert(stage_idx+1, denoiser)
-			#print(auglist)
+if kUseCplx:
+	from mk_mlutils.coshrem_xform import ksh_spec
 
-	capturecache = auglist[-1]
-	assert(issubclass(type(capturecache), CaptureAugmentation))
-	ourTransform = augmentation.Sequential(auglist, device=device)
+	def CoShNetAugmentations(
+		mean, std, 
+		additional_xforms = None,
+		batchsize:int = 512,
+		denoise = False,
+		device = 'cuda',
+		coshrem_args: BaseModel = ksh_spec,
+	) -> augmentation.Sequential:
+		""" The standard augmentation pipeline we use for our training CoShNet """
+		coshrem_args = ksh_spec if coshrem_args == None else coshrem_args
+		auglist = [
+			augmentation.Normalize(mean, std),		#10K1E: 79.7%, 10K4E: 86.9%, 10K10E: 87.6%	
+			augmentation.Pad([(0,0), (2,2), (2,2)]),		  
+			augmentation.CoShREM(coshrem_config = coshrem_args, device = device, tocplx = True),
+			augmentation.ToTorchDims(),
+			CaptureAugmentation(batchsize=batchsize),
+		]
+		if denoise:
+			stage_idx = locate(auglist, augmentation.CoShREM)
+			assert(stage_idx != -1)
+			if (stage_idx != -1):
+				sigma, RMS = 0.00712, auglist[stage_idx].RMS
+				denoiser = augmentation.Denoise(thresholdingFactor=3, RMS=RMS, sigma=sigma, device=device)
+				auglist.insert(stage_idx+1, denoiser)
+				#print(auglist)
 
-	if additional_xforms:
-		for position, xform in additional_xforms:
-			ourTransform.xforms.insert(position, xform)
-	return ourTransform
+		capturecache = auglist[-1]
+		assert(issubclass(type(capturecache), CaptureAugmentation))
+		ourTransform = augmentation.Sequential(auglist, device=device)
+
+		if additional_xforms:
+			for position, xform in additional_xforms:
+				ourTransform.xforms.insert(position, xform)
+		return ourTransform
+
+	def denoiseEnable(pipeline: augmentation.Sequential): #TODO: remove as not used.
+		denoise = False
+		for stage in pipeline:
+			if issubclass(type(stage), augmentation.CoShREM):
+				denoise = stage.denoise
+		return denoise
+#end of CoShNetAugmentations
+
 
 def enableCaching(pipeline: augmentation.Sequential):
 	for stage in pipeline:
@@ -122,13 +134,6 @@ def removeCaching(pipeline: augmentation.Sequential):
 	assert(len(indices) <= 1)		
 	for i in indices:
 		del pipeline.xforms[i]		
-
-def denoiseEnable(pipeline: augmentation.Sequential): #TODO: remove as not used.
-	denoise = False
-	for stage in pipeline:
-		if issubclass(type(stage), augmentation.CoShREM):
-			denoise = stage.denoise
-	return denoise
 			
 def noShAblationAugs(
 				mean,
@@ -153,7 +158,11 @@ def noShAblationAugs(
 	return ourTransform
 
 def augDispatcher(ablation_type: Optional[str] = None):
-	augFunc = CoShNetAugmentations
+	if kUseCplx:	
+		augFunc = CoShNetAugmentations
+	else:
+		augFunc = None
+		
 	if ablation_type == "nosh-cplx":
 		augFunc = noShAblationAugs
 	elif ablation_type == "nosh-real":

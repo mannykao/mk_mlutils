@@ -17,12 +17,9 @@ import torch
 from mkpyutils import dirutils
 from ..pipeline import logutils
 
-#for visualization.
-from ..cplx import utils as cplxutils
-from ..cplx import visual as cplxvisual
-from ..cplx import dispatcher
-
 from . import torchutils
+
+kUseCplx=False
 
 #TODO: move enumLayers to a more logical place - perhaps as part of CVnn_base
 def enumLayers(
@@ -450,81 +447,91 @@ def dochecksum(obj):
 	checksum = sha.hexdigest()
 	return checksum
 
-class TraceTorch(TraceContext):
-	""" Specialization of TraceContext to log PyTorch tensors as hashes """
-	def __init__(self, 
-		mylogger=None,		#logger object from 'logging' (or logutils.py) 
-		kCapture=False,		#enable capturing 
-		picklename=None,	#.pkl file for the captured data 
-		capture=10, 		#number of .log() calls to capture/checksum
-		kCheckSum=False,		#checksum the objects getting logged instead of its raw form.
-		cplxpicsaver = cplxvisual.saveComplexImage, #save image.
-		complex_type = "numpy", #Takes values Trabelsi or Surreal. Type of the network for which it is used.
-		image_consolidation = np.mean
-	): 
-		super().__init__(mylogger, kCapture, picklename, capture)
-		self.checksum = kCheckSum
+#
+# start of kUseCplx code
+#
+from ..cplx import dispatcher
 
-		self.cplxpicsaver = cplxpicsaver
-		self.complex_type = complex_type
-		self.image_consolidation = image_consolidation
-		self.set_cplx_preprocess_()
-		return
+if kUseCplx:
+	#for visualization.
+	from ..cplx import utils as cplxutils
+	from ..cplx import visual as cplxvisual
 
-	def set_cplx_preprocess_(self):
-		preprocess = None
+	class TraceTorch(TraceContext):
+		""" Specialization of TraceContext to log PyTorch tensors as hashes """
+		def __init__(self, 
+			mylogger=None,		#logger object from 'logging' (or logutils.py) 
+			kCapture=False,		#enable capturing 
+			picklename=None,	#.pkl file for the captured data 
+			capture=10, 		#number of .log() calls to capture/checksum
+			kCheckSum=False,		#checksum the objects getting logged instead of its raw form.
+			cplxpicsaver = cplxvisual.saveComplexImage, #save image.
+			complex_type = "numpy", #Takes values Trabelsi or Surreal. Type of the network for which it is used.
+			image_consolidation = np.mean
+		): 
+			super().__init__(mylogger, kCapture, picklename, capture)
+			self.checksum = kCheckSum
 
-		if self.complex_type.lower() == "numpy":
-			def make_npcplx(npcplx):
+			self.cplxpicsaver = cplxpicsaver
+			self.complex_type = complex_type
+			self.image_consolidation = image_consolidation
+			self.set_cplx_preprocess_()
+			return
+
+		def set_cplx_preprocess_(self):
+			preprocess = None
+
+			if self.complex_type.lower() == "numpy":
+				def make_npcplx(npcplx):
+					return npcplx
+
+			elif self.complex_type.lower() == "trabelsi":
+				def make_npcplx(x):
+					npcplx = cplxutils.cplx2numpy(x)
+					return npcplx
+
+			elif self.complex_type.lower() == "surreal":
+				def make_npcplx(x):
+					phase, mag = x[0,:,...].cpu().detach().numpy(), x[1,:,...].cpu().detach().numpy() #surreal has phase first.
+					npcplx = cplxutils.np_magphase2complex(mag, phase)
+					return npcplx
+			else:
+				raise Error("TraceTorch: Unsupported complex_type.")
+
+
+			def preprocess(x):
+				npcplx = make_npcplx(x)
+				npcplx = np.transpose(npcplx, (1,2,0))
+				npcplx = self.image_consolidation(npcplx, axis = 2)
 				return npcplx
+			
+			self.cplx_preprocess = preprocess
+			return
 
-		elif self.complex_type.lower() == "trabelsi":
-			def make_npcplx(x):
-				npcplx = cplxutils.cplx2numpy(x)
-				return npcplx
+		def takeComplexPic(
+			self, x,
+			title = "complex Image", 
+			path = "./cplximg.png",
+			figsize = (6,6)
+			):
+			np_cplx = self.cplx_preprocess(x)
 
-		elif self.complex_type.lower() == "surreal":
-			def make_npcplx(x):
-				phase, mag = x[0,:,...].cpu().detach().numpy(), x[1,:,...].cpu().detach().numpy() #surreal has phase first.
-				npcplx = cplxutils.np_magphase2complex(mag, phase)
-				return npcplx
-		else:
-			raise Error("TraceTorch: Unsupported complex_type.")
+			self.cplxpicsaver(np_cplx, path = path, title = title, figsize = figsize)
+			return
 
+		def __eq__(self, other):
+			""" compare our trace buffer against 'other' """
+			results = compareTrace(self.data, other.data)
+			return all(results.values())
 
-		def preprocess(x):
-			npcplx = make_npcplx(x)
-			npcplx = np.transpose(npcplx, (1,2,0))
-			npcplx = self.image_consolidation(npcplx, axis = 2)
-			return npcplx
-		
-		self.cplx_preprocess = preprocess
-		return
-
-	def takeComplexPic(
-		self, x,
-		title = "complex Image", 
-		path = "./cplximg.png",
-		figsize = (6,6)
-		):
-		np_cplx = self.cplx_preprocess(x)
-
-		self.cplxpicsaver(np_cplx, path = path, title = title, figsize = figsize)
-		return
-
-	def __eq__(self, other):
-		""" compare our trace buffer against 'other' """
-		results = compareTrace(self.data, other.data)
-		return all(results.values())
-
-	def log(self, obj, tag=''):
-		""" use logger to log 'obj' to log file and console. Also capture it in the
-			trace buffer (dict)
-		"""
-		if (self.count < self.capturecnt):	#to save the call to dochecksum() if we are going to ignore it
-			if self.checksum:
-				obj = dochecksum(obj)
-			super().log(obj, tag)
+		def log(self, obj, tag=''):
+			""" use logger to log 'obj' to log file and console. Also capture it in the
+				trace buffer (dict)
+			"""
+			if (self.count < self.capturecnt):	#to save the call to dochecksum() if we are going to ignore it
+				if self.checksum:
+					obj = dochecksum(obj)
+				super().log(obj, tag)
 
 class Fisher(ABC):
 	"""
