@@ -45,7 +45,7 @@ def importFolder(path:Path, folder:Union[str, Path], logging:bool=True):
 	for file in list(folder.glob('*.py')):
 		filename = Path(file.name).stem
 		if filefilter(filename):
-			print(f" {filename=}")
+			if logging: print(f" {filename=}")
 			files.append(filename)
 	modules = importFiles(path, files, logging=logging)
 	#print(modules)	

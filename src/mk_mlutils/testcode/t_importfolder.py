@@ -8,6 +8,7 @@ Created on Wed Feb 8 7:01:29 2023
 """
 from pathlib import Path, PurePosixPath, PureWindowsPath, PurePath
 from typing import Tuple, Callable, Iterable, List, Any, Dict, Union
+from setuptools import find_packages
 
 from mkpyutils import folderiter
 import mk_mlutils.utils.importutils as importutils
@@ -15,6 +16,7 @@ import mk_mlutils.utils.importutils as importutils
 kImport1=False
 kImportFolder1=False
 kImportFolder2=True
+kSetuptools=False
 
 try:
 	import mk_mlutils as mk_mlutils
@@ -34,6 +36,20 @@ modulefolder=[
 	'viz',
 ]
 
+def importAllPackages(where:str, srcroot:Union[str, Path]) -> list:
+	""" 	#D:/Dev/ML/mk_mlutils/src """
+	packages = find_packages(where=where)
+	print(f"{packages=}")
+	imported = []
+	for package in packages:
+		if package == "mk_mlutils":
+			continue
+		parts = package.split(".")
+		print(f"{'.'.join(parts[:-1])} {parts[-1]}")
+		pkg = importutils.importFolder(package, srcroot)
+		imported.append(pkg)
+	return imported
+
 
 if __name__ == "__main__":
 	if kImport1:
@@ -49,7 +65,14 @@ if __name__ == "__main__":
 
 	if kImportFolder2:
 		for folder in modulefolder:
-			print(f"import all from '{folder}'...")
-			modules = importutils.importFolder(f'mk_mlutils.{folder}', path/folder, logging=False)
+			print(f"import all from 'mk_mlutils.{folder}'...")
+			modules = importutils.importFolder(f'mk_mlutils.{folder}', path/folder, logging=True)
 			print(modules, len(modules))
 			assert(any(module is not None for module in modules))
+
+	if kSetuptools:		
+		srcroot = Path(__file__).parent.parent.parent
+		print(srcroot)		
+
+		imported = importAllPackages(str(srcroot), srcroot)
+		print(imported)
