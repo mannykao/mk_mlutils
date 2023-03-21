@@ -15,8 +15,8 @@ import mk_mlutils.utils.importutils as importutils
 
 kImport1=False
 kImportFolder1=False
-kImportFolder2=True
-kSetuptools=False
+kImportFolder2=False
+kSetuptools=True
 
 try:
 	import mk_mlutils as mk_mlutils
@@ -36,19 +36,27 @@ modulefolder=[
 	'viz',
 ]
 
-def importAllPackages(where:str, srcroot:Union[str, Path]) -> list:
-	""" 	#D:/Dev/ML/mk_mlutils/src """
-	packages = find_packages(where=where)
-	print(f"{packages=}")
-	imported = []
-	for package in packages:
-		if package == "mk_mlutils":
-			continue
-		parts = package.split(".")
-		print(f"{'.'.join(parts[:-1])} {parts[-1]}")
-		pkg = importutils.importFolder(package, srcroot)
-		imported.append(pkg)
-	return imported
+def importFolder(
+	path:Path,					#e.g. 'mk_mlutils.dataset' 
+	folder:Union[str, Path],	#file path to the source folder 
+	logging:bool=True
+):
+	skip = {'__init__', }
+
+	def filefilter(file:str) -> bool:
+		result = folderiter.deffile_filter(file) and (file not in skip)
+		return result
+
+	print(f"{path=} {folder=}")
+	files = []
+	for file in list(folder.glob('*.py')):
+		filename = Path(file.name).stem
+		if filefilter(filename):
+			if logging: print(f" {filename=}")
+			files.append(filename)
+	modules = importutils.importFiles(path, files, logging=logging)
+	#print(modules)	
+	return modules
 
 
 if __name__ == "__main__":
@@ -61,7 +69,7 @@ if __name__ == "__main__":
 	path = Path(__file__).parent.parent
 
 	if kImportFolder1:
-		importutils.importFolder('mk_mlutils.utils', path/'utils')
+		importFolder('mk_mlutils.dataset', path/'dataset')
 
 	if kImportFolder2:
 		for folder in modulefolder:
@@ -74,5 +82,5 @@ if __name__ == "__main__":
 		srcroot = Path(__file__).parent.parent.parent
 		print(srcroot)		
 
-		imported = importAllPackages(str(srcroot), srcroot)
+		imported = importutils.importAllPackages(srcroot, srcroot, logging=True)
 		print(imported)

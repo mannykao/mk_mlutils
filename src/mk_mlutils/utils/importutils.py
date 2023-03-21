@@ -8,6 +8,7 @@ Created on Sun Mar 19 7:01:29 2023
 """
 from pathlib import Path, PurePosixPath, PureWindowsPath, PurePath
 from typing import Tuple, Callable, Iterable, List, Any, Dict, Union
+from setuptools import find_packages
 
 from mkpyutils import folderiter
 
@@ -33,7 +34,11 @@ def importFiles(path:Union[str, Path], modules:list, logging=True) -> List[objec
 		imports.append(import1(path, module, logging=logging))
 	return imports	
 
-def importFolder(path:Path, folder:Union[str, Path], logging:bool=True):
+def importFolder(
+	path:Path,					#e.g. 'mk_mlutils.dataset' 
+	folder:Union[str, Path],	#file path to the source folder 
+	logging:bool=True
+):
 	skip = {'__init__', }
 
 	def filefilter(file:str) -> bool:
@@ -51,8 +56,31 @@ def importFolder(path:Path, folder:Union[str, Path], logging:bool=True):
 	#print(modules)	
 	return modules
 
+def importAllPackages(
+	where:[str, Path], 					#where setup.py is located
+	srcroot:Union[str, Path],	#
+	logging=True
+) -> list:
+	""" 	#D:/Dev/ML/mk_mlutils/src """
+	packages = find_packages(where=str(where))
+	if logging: print(f"{packages=} {srcroot=}")
+	
+	imported = []
+	for package in packages:
+		parts = package.split(".")
+		folder = srcroot/ "/".join(parts)
+		pkg = importFolder(package, folder, logging=logging)
+		imported.append(pkg)
+	return imported
+
 
 if __name__ == "__main__":
+	from setuptools import find_packages
+
 	print(import1('mk_mlutils.utils', 'ourlogger'))
 	print(import1('mk_mlutils.utils', 'torchutils'))
 	print(import1('mk_mlutils.utils', 'trace'))
+
+	srcroot = Path(__file__).parent.parent.parent
+	imported = importAllPackages(where=srcroot, srcroot=srcroot, logging=False)
+	print(imported)
