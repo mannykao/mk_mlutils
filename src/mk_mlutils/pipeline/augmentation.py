@@ -12,7 +12,7 @@ import numpy as np, random
 import abc
 import skimage
 import torch
-
+import warnings #for MARKER's xforms only.
 from typing import Union
 
 from functools import partial
@@ -832,4 +832,116 @@ class CaptureAugmentation(NullXform):
 		batchN = self.batchindex
 		self.batchindex += 1
 		return self.cache[batchN]
-	
+
+# ===
+#MARKER: Following xforms from t_tsaug*.py of SuperPixelSeg/testcode/
+# ===
+class SegClassOHE(Base):
+	"""One Hot Encoding for `n` classes. SSN has this. No need for sem-seg-pyt."""
+	def __init__(self, n):
+		self.n_classes = n
+	def label2one_hot_torch(self, labels, C=14):
+		#copied from superpixel_fcn repo. Fengting Yang et al.
+		# w.r.t http://jacobkimmel.github.io/pytorch_onehot/
+		"""
+			Converts an integer label torch.autograd.Variable to a one-hot Variable.
+
+			Parameters
+			----------
+			labels : torch.autograd.Variable of torch.cuda.LongTensor
+				N x 1 x H x W, where N is batch size.
+				Each value is an integer representing correct classification.
+			C : integer.
+				number of classes in labels.
+
+			Returns
+			-------
+			target : torch.cuda.FloatTensor
+				N x C x H x W, where C is class number. One-hot encoded.
+		"""
+		b,_, h, w = labels.shape
+		one_hot = torch.zeros(b, C, h, w, dtype=torch.long).cuda()
+		target = one_hot.scatter_(1, labels.type(torch.long).data, 1) #require long type
+
+		return target.type(torch.float32)
+
+	def __call__(self, batch):
+		ohe_batch = self.label2one_hot_torch(batch, C = self.n_classes)
+		return ohe_batch
+
+class BSDLabelDrop(Base):
+	"""BSD .mat file read has 5 labels. Pass 1 (index)."""
+	def __init__(self, hack_index: int = 0):
+		self.hack_index = hack_index
+		return
+	def __call__(self, batch):
+		#print(batch)
+		#print(f"{type(batch)}, {batch.shape=}"
+		hacked_batch = []
+		for image in batch:
+			hacked_image = image[:, self.hack_index][0][0][0][0]
+			hacked_batch.append(hacked_image)
+
+		hacked_batch = hacked_batch#.transpose(1, 2, 0)[:,:,:,np.newaxis]
+		return hacked_batch
+
+class OnlyToTensor(Base):
+	"""Only convert to tensor of certain type. Don't do extra stuff."""
+	def __init__(self, dtype = torch.LongTensor):
+		self.dtype = dtype
+	def __call__(self, batch):
+		return torch.from_numpy(np.array(batch)).type(self.dtype)
+
+class ImgBatchToTensor(Base):
+	"""Convert ndarrays in sample to Tensors."""
+
+	def __call__(self, batch):
+		xformed_batch = []
+		for image in batch:
+			# swap color axis because
+			# numpy image: H x W x C
+			# torch image: C X H X W
+			image = image.transpose((2, 0, 1))
+			xformed_batch.append(image)
+
+		return torch.from_numpy(np.array(xformed_batch, dtype = np.float32))
+
+	def __str__(self):
+		return f"ToTensor()"
+
+class RescaleImgBatch(Base):
+	"""Rescale the images in a batch to a given size.
+	---
+	Args:
+		1. output_size (tuple or int): Desired output size. If tuple, output is
+			matched to output_size. If int, smaller of image edges is matched
+			to output_size keeping aspect ratio the same.
+	TODO: Analyze behavior in int mode.
+	"""
+
+	def __init__(self, output_size):
+		assert isinstance(output_size, (int, tuple))
+		self.output_size = output_size
+		if isinstance(output_size, int):
+			warnings.warn("Behavior in INT mode must be tested.", DeprecationWarning)
+
+	def __call__(self, batch):
+		imgs = []
+		for image in batch:
+			h, w = image.shape[:2]
+			if isinstance(self.output_size, int):
+				if h > w:
+					new_h, new_w = self.output_size * h / w, self.output_size
+				else:
+					new_h, new_w = self.output_size, self.output_size * w / h
+			else:
+				new_h, new_w = self.output_size
+
+			new_h, new_w = int(new_h), int(new_w)
+
+			img = skimage.transform.resize(image, (new_h, new_w))	#use skimage.transform
+			imgs.append(img)
+		return imgs
+# ===
+# MARKER: Done
+# ===
