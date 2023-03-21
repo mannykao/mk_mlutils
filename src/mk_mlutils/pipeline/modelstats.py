@@ -15,11 +15,10 @@ import tqdm
 import torch
 import torch.nn.functional as F
 
-from cplxmodule.nn.relevance import penalties
-from cplxmodule.nn.utils.sparsity import sparsity, named_sparsity
-
 from mk_mlutils.utils import torchutils, trace
 from mk_mlutils.pipeline import torchbatch, trainutils
+
+kUseCplx=False
 
 Model_Score = namedtuple("Model_Score", "cm precision recall loss")
 
@@ -80,31 +79,35 @@ def model_predict(model, batchbuilder, xform = None, device = "cpu") -> tuple:
 	fact = torch.cat(fact, dim=0).cpu() if fact else None
 	return torch.cat(pred, dim=0).cpu(), fact
 
-def model_score(
-	model, 
-	batchbuilder, 
-	threshold=1.0, 
-	xform=None, 
-	device="cpu", 
-	details=False,
-	predict: Callable = model_predict_basic,
-) -> Model_Score:
+if kUseCplx:
+	from cplxmodule.nn.relevance import penalties
+	from cplxmodule.nn.utils.sparsity import sparsity, named_sparsity
 
-	model.eval()
-	pred, fact = predict(model, batchbuilder, xform, device)
+	def model_score(
+		model, 
+		batchbuilder, 
+		threshold=1.0, 
+		xform=None, 
+		device="cpu", 
+		details=False,
+		predict: Callable = model_predict_basic,
+	) -> Model_Score:
 
-	loss = softmax_nll(pred, fact, reduction="mean")
-	kl_d = sum(penalties(model, reduction="mean"))
+		model.eval()
+		pred, fact = predict(model, batchbuilder, xform, device)
 
-	f_sparsity = sparsity(model, hard=True, threshold=threshold)
+		loss = softmax_nll(pred, fact, reduction="mean")
+		kl_d = sum(penalties(model, reduction="mean"))
 
-	# C_{ij} = \hat{P}(y = i & \hat{y} = j)
-	cm = confusion_matrix(fact.numpy(), pred.numpy().argmax(axis=-1))
+		f_sparsity = sparsity(model, hard=True, threshold=threshold)
 
-	tp = cm.diagonal()
-	fp, fn = cm.sum(axis=1) - tp, cm.sum(axis=0) - tp
+		# C_{ij} = \hat{P}(y = i & \hat{y} = j)
+		cm = confusion_matrix(fact.numpy(), pred.numpy().argmax(axis=-1))
 
-	precision = [p for p in tp / (tp + fp)]
-	recall	  = [p for p in tp / (tp + fn)]
+		tp = cm.diagonal()
+		fp, fn = cm.sum(axis=1) - tp, cm.sum(axis=0) - tp
 
-	return Model_Score(cm, precision, recall, loss)
+		precision = [p for p in tp / (tp + fp)]
+		recall	  = [p for p in tp / (tp + fn)]
+
+		return Model_Score(cm, precision, recall, loss)

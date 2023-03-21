@@ -17,17 +17,37 @@ else:
 	print("Succeeded importing 'mk_mlutils'")
 	print(f"{  dir(mk_mlutils)=}")
 
-modules =[
+modules1 =[
 	'augmentation',
 	'batch',
 	'BigFile',
 	'BigFileBuilder',
+	'bigfilebuildermp',
+	'ImagePatcher',
+	'loadCIFAR',		#use augmentation
+	'loadMNIST',
+	'logutils',
+	'mixup',
+	'patching',
+	'modelstats',		#has 'cplx'
+	'roc',
+	'torchbatch',
+	'trainutils',	#has CoShREM etc.
 ]
 
-#print(importutils.import1('mk_mlutils.pipeline', 'augmentation'))
-#print(importutils.import1('mk_mlutils.pipeline', 'batch'))
+modules2 =[
+	'ourlogger',
+	'torchutils',
+	'trace',
+]
 
-importutils.importFiles('mk_mlutils.pipeline', modules)
+#print(importutils.import1('mk_mlutils.pipeline', 'patching'))
+#print(importutils.import1('mk_mlutils.pipeline', 'loadCIFAR'))
+#print(importutils.import1('mk_mlutils.pipeline', 'modelstats'))
+
+importutils.importFiles('mk_mlutils.pipeline', modules1)
+importutils.importFiles('mk_mlutils.utils', modules2)
+
 
 
 

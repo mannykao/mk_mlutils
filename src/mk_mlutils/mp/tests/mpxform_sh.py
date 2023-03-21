@@ -20,7 +20,6 @@ import signal
 from mkpyutils import dirutils
 from mkpyutils import testutil
 
-#from shnetutil.pipeline import BigFile, BigFileBuilder
 from mk_mlutils.dataset import dataset_base, fashion
 from mk_mlutils.pipeline import batch, augmentation
 from mk_mlutils import coshrem_xform, torchutils
