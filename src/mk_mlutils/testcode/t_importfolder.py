@@ -83,4 +83,9 @@ if __name__ == "__main__":
 		print(srcroot)		
 
 		imported = importutils.importAllPackages(srcroot, srcroot, logging=True)
-		print(imported)
+		#print(imported)
+		for folder in imported:
+			for imp1 in folder:
+				print(f"imported {imp1.__name__} as {imp1.__package__}")
+			#parts = str(imp1[0].split(" from "))
+			#print(parts[0])

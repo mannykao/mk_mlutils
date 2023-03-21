@@ -83,4 +83,7 @@ if __name__ == "__main__":
 
 	srcroot = Path(__file__).parent.parent.parent
 	imported = importAllPackages(where=srcroot, srcroot=srcroot, logging=False)
-	print(imported)
+
+	for folder in imported:
+		for imp1 in folder:
+			print(f"imported {imp1.__name__} as {imp1.__package__}")
