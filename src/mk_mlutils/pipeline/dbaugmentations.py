@@ -14,10 +14,11 @@ from pydantic import BaseModel
 import time
 from typing import List, Tuple, Dict, Union, Optional
 
+from mk_mlutils import projconfig 
 from mk_mlutils.pipeline import batch, augmentation
 from mkpyutils.testutil import time_spent
 
-kUseCplx=False
+kUseCplx=projconfig.kUseCplx
 
 class CaptureAugmentation(augmentation.NullXform):
 	""" Capture the result of a certain stage in our augmentation pipeline """

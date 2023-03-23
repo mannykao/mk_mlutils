@@ -22,6 +22,9 @@ kRepoRoot="mk_mlutils"
 #from kRepoRoot to the sources
 kToSrcRoot="src/mk_mlutils"	#kRepoRoot/kToSrcRoot = "mk_mlutils/src/mk_mlutils"
 
+kUseCplx=False		#enable cplx and CoShRem dependent code - mck
+
+
 def getRefFile():
 	return __file__
 

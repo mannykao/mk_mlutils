@@ -15,10 +15,11 @@ import tqdm
 import torch
 import torch.nn.functional as F
 
+from mk_mlutils import projconfig 
 from mk_mlutils.utils import torchutils, trace
 from mk_mlutils.pipeline import torchbatch, trainutils
 
-kUseCplx=False
+kUseCplx=projconfig.kUseCplx
 
 Model_Score = namedtuple("Model_Score", "cm precision recall loss")
 

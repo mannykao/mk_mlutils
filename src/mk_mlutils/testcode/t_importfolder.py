@@ -6,6 +6,7 @@ Created on Wed Feb 8 7:01:29 2023
 
 @author: Manny Ko
 """
+from collections import Counter, namedtuple
 from pathlib import Path, PurePosixPath, PureWindowsPath, PurePath
 from typing import Tuple, Callable, Iterable, List, Any, Dict, Union
 from setuptools import find_packages
@@ -13,7 +14,7 @@ from setuptools import find_packages
 from mkpyutils import folderiter
 import mk_mlutils.utils.importutils as importutils
 
-kImport1=False
+kImport1=True
 kImportFolder1=False
 kImportFolder2=False
 kSetuptools=True
@@ -61,10 +62,10 @@ def importFolder(
 
 if __name__ == "__main__":
 	if kImport1:
-		print(importutils.import1('mk_mlutils.utils', 'importutils'))
-		print(importutils.import1('mk_mlutils.utils', 'ourlogger'))
-		print(importutils.import1('mk_mlutils.utils', 'torchutils'))
-		print(importutils.import1('mk_mlutils.utils', 'trace'))
+		print(importutils.import1('mk_mlutils.pipeline', 'augmentation'))
+#		print(importutils.import1('mk_mlutils.utils', 'ourlogger'))
+#		print(importutils.import1('mk_mlutils.utils', 'torchutils'))
+#		print(importutils.import1('mk_mlutils.utils', 'trace'))
 
 	path = Path(__file__).parent.parent
 
@@ -86,6 +87,8 @@ if __name__ == "__main__":
 		#print(imported)
 		for folder in imported:
 			for imp1 in folder:
-				print(f"imported {imp1.__name__} as {imp1.__package__}")
-			#parts = str(imp1[0].split(" from "))
-			#print(parts[0])
+				if type(imp1) is not importutils.Error:
+					print(f"imported {imp1.__name__} as {imp1.__package__}")
+				else:
+					print(f" '{imp1.errmsg}'")	
+	

@@ -15,11 +15,12 @@ import numpy as np
 import torch
 
 from mkpyutils import dirutils
+from mk_mlutils import projconfig 
 from ..pipeline import logutils
 
 from . import torchutils
 
-kUseCplx=False
+kUseCplx=projconfig.kUseCplx
 
 #TODO: move enumLayers to a more logical place - perhaps as part of CVnn_base
 def enumLayers(

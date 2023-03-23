@@ -19,9 +19,12 @@ from functools import partial
 from skimage import transform, restoration
 from scipy import ndimage
 
+from mk_mlutils import projconfig 
+
 from .patching import get_mp_patches, find_patch
 
-kUseCplx=False		#enable cplx and CoShRem dependent code - mck
+#enable cplx and CoShRem dependent code - mck
+kUseCplx=projconfig.kUseCplx
 
 if kUseCplx:
 	from .. import coshrem_xform

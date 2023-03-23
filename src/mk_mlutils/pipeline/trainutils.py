@@ -18,13 +18,14 @@ import torch.nn as nn
 from mkpyutils.classutils import method_exists
 from mkpyutils.testutil import time_spent
 
+from mk_mlutils import projconfig
 from mk_mlutils.dataset import dataset_base, datasetutils
 from mk_mlutils.modelling import modelfactory
 from mk_mlutils.pipeline import augmentation, batch 
 from mk_mlutils.pipeline import dbaugmentations
 from mk_mlutils.utils import torchutils, trace
 
-kUseCplx=False
+kUseCplx=projconfig.kUseCplx
 
 
 # tuple to config the Model for each training stage - used in ModelPipeline()

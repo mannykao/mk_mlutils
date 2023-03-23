@@ -4,6 +4,6 @@ pillow
 pydantic
 scipy
 scikit-image
-torch>=1.9
-torchvision
+torch=1.13.1
+torchvision=0.14.1
 external/mkpyutils-1.5-py3-none-any.whl

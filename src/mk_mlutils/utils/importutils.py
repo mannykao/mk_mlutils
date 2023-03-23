@@ -6,12 +6,14 @@ Created on Sun Mar 19 7:01:29 2023
 
 @author: Manny Ko
 """
+from collections import Counter, namedtuple
 from pathlib import Path, PurePosixPath, PureWindowsPath, PurePath
 from typing import Tuple, Callable, Iterable, List, Any, Dict, Union
 from setuptools import find_packages
 
 from mkpyutils import folderiter
 
+Error=namedtuple("Error", "errmsg")
 
 #https://stackoverflow.com/questions/6677424/how-do-i-import-variable-packages-in-python-like-using-variable-variables-i
 def import1(path:str, module:str, logging=True) -> object:
@@ -20,7 +22,9 @@ def import1(path:str, module:str, logging=True) -> object:
 	try:
 		imported = getattr(__import__(path, fromlist=[module]), module)
 	except:
-		print(f"** Failed to import package '{path}.{module}'")
+		errmsg = f"** Failed to import package '{path}.{module}'"
+		imported = Error(errmsg)
+		print(errmsg)
 	else:
 		if logging:
 			print(f"Succeeded importing '{path}.{module}'")
