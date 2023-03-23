@@ -90,4 +90,7 @@ if __name__ == "__main__":
 
 	for folder in imported:
 		for imp1 in folder:
-			print(f"imported {imp1.__name__} as {imp1.__package__}")
+			if type(imp1) is not importutils.Error:
+				print(f"imported {imp1.__name__} as {imp1.__package__}")
+			else:
+				print(f" '{imp1.errmsg}'")	
