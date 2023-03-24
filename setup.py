@@ -34,6 +34,7 @@ setuptools.setup(name='mk_mlutils',
 		"pydantic",
 		"scipy",
 		"scikit-learn",
+		"funcsigs",
 		"torch==1.13.1",	#temporarily pinned to this version until we sort it out
 		"torchvision==0.14.1",
 		"torchsummary", 
