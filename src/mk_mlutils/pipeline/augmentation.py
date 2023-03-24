@@ -24,13 +24,12 @@ from mk_mlutils import projconfig
 from .patching import get_mp_patches, find_patch
 
 #enable cplx and CoShRem dependent code - mck
-kUseCplx=projconfig.kUseCplx
+from mk_mlutils.projconfig import kUseCplx as kUseCplx
 
 if kUseCplx:
-	from .. import coshrem_xform
 	from cplxmodule import cplx
-
-	from ..cplx import utils as shcplxutils
+	from coshnet import coshrem_xform
+	from coshnet.cplx import utils as shcplxutils
 
 
 def transpose4Np(imgList):

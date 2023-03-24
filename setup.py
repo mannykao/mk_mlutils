@@ -17,7 +17,7 @@ packages=find_packages(where='src')
 print(f"{packages=}")
 
 setuptools.setup(name='mk_mlutils',
-	version='1.1',
+	version='1.2',
 	description='ML and PyTorch Utilies',
 	author='Manny Ko',
 	author_email='man960@hotmail.com',

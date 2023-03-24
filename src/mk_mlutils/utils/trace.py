@@ -16,11 +16,12 @@ import torch
 
 from mkpyutils import dirutils
 from mk_mlutils import projconfig 
-from ..pipeline import logutils
+from mk_mlutils.pipeline import logutils
+from mk_mlutils.utils import torchutils
 
-from . import torchutils
+#get our package configuration:
+from mk_mlutils.projconfig import kUseCplx as kUseCplx
 
-kUseCplx=projconfig.kUseCplx
 
 #TODO: move enumLayers to a more logical place - perhaps as part of CVnn_base
 def enumLayers(
@@ -448,15 +449,15 @@ def dochecksum(obj):
 	checksum = sha.hexdigest()
 	return checksum
 
+from mk_mlutils.cplx import dispatcher
+
 #
 # start of kUseCplx code
 #
-from ..cplx import dispatcher
-
 if kUseCplx:
-	#for visualization.
-	from ..cplx import utils as cplxutils
-	from ..cplx import visual as cplxvisual
+	from coshnet.cplx import dispatcher
+	from coshnet.cplx import utils as cplxutils
+	from coshnet.cplx import visual as cplxvisual
 
 	class TraceTorch(TraceContext):
 		""" Specialization of TraceContext to log PyTorch tensors as hashes """

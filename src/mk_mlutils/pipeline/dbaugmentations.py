@@ -18,7 +18,7 @@ from mk_mlutils import projconfig
 from mk_mlutils.pipeline import batch, augmentation
 from mkpyutils.testutil import time_spent
 
-kUseCplx=projconfig.kUseCplx
+from mk_mlutils.projconfig import kUseCplx as kUseCplx
 
 class CaptureAugmentation(augmentation.NullXform):
 	""" Capture the result of a certain stage in our augmentation pipeline """
@@ -76,7 +76,7 @@ def locate(auglist:list, target:augmentation.Base) -> int:
 	return index
 
 if kUseCplx:
-	from mk_mlutils.coshrem_xform import ksh_spec
+	from coshnet.coshrem_xform import ksh_spec
 
 	def CoShNetAugmentations(
 		mean, std, 
