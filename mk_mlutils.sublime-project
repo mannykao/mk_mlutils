@@ -1,0 +1,49 @@
+{
+	"folders":
+	[
+		{
+			"file_exclude_patterns":
+			[
+				"*.sln",
+				"*.pyproj",
+				"*.eml",
+				"*.tex",
+				"*.jpg",
+				"*.html",
+				"*.pickle",
+				"*.npy",
+				"*.gz",
+				"*.pic",
+				"*.dat",
+				"**.pth",
+				"*.ipynb",
+				"*.blg",
+				"*.bbl",
+				"*.bib",
+				"*.pkl",
+				"*.mp4",
+				"*.mat",
+				"*.csv",
+				"*.aux",
+				"*.json",
+				"*.js",
+				"*.svg",
+				"*.gz",
+				"*.npz",
+				"*.whl"
+			],
+			"folder_exclude_patterns":
+			[
+				".vs",
+				".ipynb_checkpoints",
+				"__pycache__",
+				"venv4*",
+				"build/",
+				"*.egg-info",
+				"dist"
+			],
+			"path": "."
+		}
+	],
+	"virtualenv": "D:\\Dev\\ML\\mk_mlutils\\venv4mlutils"
+}

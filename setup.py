@@ -29,9 +29,11 @@ setuptools.setup(name='mk_mlutils',
 	python_requires='>=3.8',
 	install_requires=[
 		"numpy",
+		"matplotlib",
 		"pillow",			#PIL
 		"pydantic",
 		"scipy",
+		"scikit-learn",
 		"torch==1.13.1",	#temporarily pinned to this version until we sort it out
 		"torchvision==0.14.1",
 		"torchsummary", 

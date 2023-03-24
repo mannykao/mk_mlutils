@@ -84,6 +84,8 @@ if __name__ == "__main__":
 	print(import1('mk_mlutils.utils', 'ourlogger'))
 	print(import1('mk_mlutils.utils', 'torchutils'))
 	print(import1('mk_mlutils.utils', 'trace'))
+	print(import1('mk_mlutils.pipeline', 'modelstats'))
+
 
 	srcroot = Path(__file__).parent.parent.parent
 	imported = importAllPackages(where=srcroot, srcroot=srcroot, logging=False)
