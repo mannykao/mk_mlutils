@@ -43,7 +43,7 @@ def importFolder(
 	folder:Union[str, Path],	#file path to the source folder 
 	logging:bool=True
 ):
-	skip = {'__init__', }
+	skip = {'__init__', 'setup'}
 
 	def filefilter(file:str) -> bool:
 		result = folderiter.deffile_filter(file) and (file not in skip)
@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
 	for folder in imported:
 		for imp1 in folder:
-			if type(imp1) is not importutils.Error:
+			if type(imp1) is not Error:
 				print(f"imported {imp1.__name__} as {imp1.__package__}")
 			else:
 				print(f" '{imp1.errmsg}'")	

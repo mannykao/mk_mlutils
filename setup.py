@@ -23,7 +23,7 @@ setuptools.setup(name='mk_mlutils',
 	author_email='man960@hotmail.com',
 	#url='https://www.python.org/sigs/distutils-sig/',
 	packages=packages,
-	package_dir={"": 'src'},	#remove 'src' otherwise we need to do 'import src.shnetutil'
+	package_dir={"": 'src'},	#remove 'src' otherwise we need to do 'import src.mk_mlutils'
 	include_package_data=True,
 	package_data={'': ['bases/*.npy']},
 	python_requires='>=3.8',
@@ -32,8 +32,8 @@ setuptools.setup(name='mk_mlutils',
 		"pillow",			#PIL
 		"pydantic",
 		"scipy",
-		"torch==1.13.1",		#temporarily pinned to this version until we sort it out
-		"torchvision",
+		"torch==1.13.1",	#temporarily pinned to this version until we sort it out
+		"torchvision==0.14.1",
 		"torchsummary", 
 	],
 )
