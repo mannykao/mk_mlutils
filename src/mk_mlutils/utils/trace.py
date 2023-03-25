@@ -455,9 +455,9 @@ from mk_mlutils.cplx import dispatcher
 # start of kUseCplx code
 #
 if kUseCplx:
-	from coshnet.cplx import dispatcher
-	from coshnet.cplx import utils as cplxutils
-	from coshnet.cplx import visual as cplxvisual
+	from cplxnn.cplx import dispatcher
+	from cplxnn.cplx import utils as cplxutils
+	from cplxnn.cplx import visual as cplxvisual
 
 	class TraceTorch(TraceContext):
 		""" Specialization of TraceContext to log PyTorch tensors as hashes """

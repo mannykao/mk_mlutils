@@ -204,7 +204,7 @@ def downloadMNIST(site_url="http://yann.lecun.com/exdb/mnist/", outfolder='input
 				result = False
 				print(f"URL error: {url}")
 
-			if response.ok:
+			if response and response.ok:
 				with open(filename, "wb") as f:
 					#f.write(response.text)
 					f.write(response.content)

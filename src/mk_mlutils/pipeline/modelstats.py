@@ -16,11 +16,9 @@ import torch
 import torch.nn.functional as F
 
 from mk_mlutils import projconfig 
-from mk_mlutils.utils import torchutils, trace
-from mk_mlutils.pipeline import torchbatch, trainutils
+from mk_mlutils.utils import trace
+from mk_mlutils.pipeline import torchbatch
 
-#get our package configuration:
-from mk_mlutils.projconfig import kUseCplx as kUseCplx
 
 Model_Score = namedtuple("Model_Score", "cm precision recall loss")
 
@@ -81,35 +79,3 @@ def model_predict(model, batchbuilder, xform = None, device = "cpu") -> tuple:
 	fact = torch.cat(fact, dim=0).cpu() if fact else None
 	return torch.cat(pred, dim=0).cpu(), fact
 
-if kUseCplx:
-	from cplxmodule.nn.relevance import penalties
-	from cplxmodule.nn.utils.sparsity import sparsity, named_sparsity
-
-	def model_score(
-		model, 
-		batchbuilder, 
-		threshold=1.0, 
-		xform=None, 
-		device="cpu", 
-		details=False,
-		predict: Callable = model_predict_basic,
-	) -> Model_Score:
-
-		model.eval()
-		pred, fact = predict(model, batchbuilder, xform, device)
-
-		loss = softmax_nll(pred, fact, reduction="mean")
-		kl_d = sum(penalties(model, reduction="mean"))
-
-		f_sparsity = sparsity(model, hard=True, threshold=threshold)
-
-		# C_{ij} = \hat{P}(y = i & \hat{y} = j)
-		cm = confusion_matrix(fact.numpy(), pred.numpy().argmax(axis=-1))
-
-		tp = cm.diagonal()
-		fp, fn = cm.sum(axis=1) - tp, cm.sum(axis=0) - tp
-
-		precision = [p for p in tp / (tp + fp)]
-		recall	  = [p for p in tp / (tp + fn)]
-
-		return Model_Score(cm, precision, recall, loss)

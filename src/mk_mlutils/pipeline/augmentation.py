@@ -28,8 +28,8 @@ from mk_mlutils.projconfig import kUseCplx as kUseCplx
 
 if kUseCplx:
 	from cplxmodule import cplx
-	from coshnet import coshrem_xform
-	from coshnet.cplx import utils as shcplxutils
+	from cplxnn import coshrem_xform
+	from cplxnn.cplx import utils as shcplxutils
 
 
 def transpose4Np(imgList):
