@@ -11,6 +11,7 @@ Created on Wed Mar 1 17:44:29 2023
 
 """
 import re
+from typing import List, Tuple, Optional, Callable
 from pathlib import Path, PurePosixPath
 from mkpyutils import dirutils
 
@@ -22,8 +23,18 @@ kRepoRoot="mk_mlutils"
 #from kRepoRoot to the sources
 kToSrcRoot="src/mk_mlutils"	#kRepoRoot/kToSrcRoot = "mk_mlutils/src/mk_mlutils"
 
+#ifdef configuration flags:
 kUseCplx=False		#enable cplx and CoShRem dependent code - mck
 
+
+def enable(**flags):
+	global kUseCplx
+
+	print(f"mk_mlutils.projconfig.enable({flags}")
+
+	for k, v in flags.items():
+		if k == 'kUseCplx':		#TODO: remove hardcoding
+			kUseCplx = v
 
 def getRefFile():
 	return __file__
