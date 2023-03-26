@@ -44,11 +44,15 @@ class NullXform(object):
 
 	"""
 	def __init__(self, **kwargs):
+#		print(f"NullXform({kwargs})")
 		self.kwargs = kwargs
 		pass
 
 	def __call__(self, sample):
+#		print(f"__call__")
 		return sample
+
+kDefXform=NullXform()
 
 class BatchBuilderBase(metaclass=abc.ABCMeta):
 	""" An batch generator with support for asyncio and MP xform/augmentation,
@@ -188,7 +192,7 @@ class BatchIterator():
 		indices = builder.indices[offset:end]
 		indices = builder.rand_indices(len(indices))
 		builder.cur_batch = indices 		#for Minibatch persistency and Data Echoing
-		images, labels = getBatchAsync(builder.dataset, indices)
+		images, labels = getBatchAsync(builder.dataset, indices, NullXform(), NullXform())
 		return images, labels
 
 
@@ -229,7 +233,7 @@ class Bagging(BatchBuilder):
 		indices = self.indices[offset:end]
 		indices = self.rand_indices(len(indices))
 		self.cur_batch = indices 		#for Minibatch persistency and Data Echoing
-		images, labels = getBatchAsync(self.dataset, indices)
+		images, labels = getBatchAsync(self.dataset, indices, NullXform(), NullXform())
 		return images, labels
 
 	def epoch(self, kLogging=False):
@@ -287,10 +291,11 @@ async def get1(dataset, index):
 async def getBatch(
 	dataset, 
 	indices:np.ndarray, 
-	imgXform:Callable = NullXform, 
-	labelXform:Callable = NullXform, 
+	imgXform:Callable = None, 
+	labelXform:Callable = None, 
 	logging=False
 ):
+	print(f"getBatch({imgXform})")
 	batchsize = len(indices)
 	imglist = []	#for collecting the results from async complete callback
 	labellist = []
@@ -325,7 +330,8 @@ async def getBatch(
 		verify2result(myresults, myresults2)
 
 	#TODO: change get1() to directly output to a ndarray
-	return imgXform(imglist), labelXform(labellist)
+	#return imglist, labellist
+	return imgXform(np.asarray(imglist)), labelXform(labellist)
 
 def getBatchAsync(
 	dbchunk,
@@ -355,7 +361,7 @@ def test_epochgen(mnist_train, bsize, epochs=1):
 		for b, mybatch in enumerate(trainiter):
 			#'mybatch' is an array of indices defining the minibatch samples
 			#print(mybatch[10:])
-			images, labels = getBatchAsync(mnist_train, mybatch)
+			images, labels = getBatchAsync(mnist_train, mybatch, NullXform(), NullXform())
 			#images, label = batch_
 			print(f"[{i,b}]{mybatch.shape}, {images.shape}")
 			labelcnt.update(labels)
@@ -473,7 +479,7 @@ class BatchCache(BatchBuilderBase):
 		epoch = batchbuilder.epoch(False)
 
 		for b, mybatch in enumerate(epoch):
-			imglist, labels = getBatchAsync(batchbuilder.dataset, mybatch)
+			imglist, labels = getBatchAsync(batchbuilder.dataset, mybatch, NullXform(), NullXform())
 			imglist = self.xform(np.asarray(imglist))
 			self.insert(imglist)
 		if kLogging:
@@ -534,7 +540,7 @@ def verifyBatchCache(batchbuilder, xform):
 
 	tic2 = time.time()
 	for b, mybatch in enumerate(epoch):
-		imglist, labels = getBatchAsync(dbchunk, mybatch)
+		imglist, labels = getBatchAsync(dbchunk, mybatch, NullXform(), NullXform())
 		imglist = xform(np.asarray(imglist))
 		#print(f"b[{b}] {len(imglist)}, {type(imglist)}, {type(batchcache.cache[b][0])}")
 		#print(f"b[{b}] {len(labels)}, {type(labels)}, {type(batchcache.cache[b][1])}")

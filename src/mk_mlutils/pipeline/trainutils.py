@@ -202,8 +202,10 @@ def loadAugCache(
 		batchbuilder = batch.BatchBuilder(dataset=dataset, batchsize=batchsize, shuffle=False)
 		epoch = batchbuilder.epoch()
 		#2.1: iterate all the batches and apply our xform to enable them to be captured in 'capturecache'
+		nullxform = batch.NullXform()
+
 		for b, mybatch in enumerate(epoch):
-			imglist, labels = batch.getBatchAsync(dataset, mybatch)
+			imglist, labels = batch.getBatchAsync(dataset, mybatch, nullxform, nullxform)
 			imglist = ourTransform(imglist)
 		capturecache.finalize()
 
