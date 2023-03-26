@@ -17,7 +17,7 @@ import torch.nn.functional as F
 
 from mk_mlutils import projconfig 
 from mk_mlutils.utils import trace
-from mk_mlutils.pipeline import torchbatch
+from mk_mlutils.pipeline import batch, torchbatch
 
 
 Model_Score = namedtuple("Model_Score", "cm precision recall loss")
@@ -48,7 +48,8 @@ def model_predict_basic(model, batchbuilder, xform = None, device = "cpu") -> tu
 
 		for bi, mybatch in enumerate(epoch):
 			#data, labels = mybatch
-			data, labels = torchbatch.getBatchAsync(device, dbchunk, mybatch, xform = xform)
+			data, labels = torchbatch.getBatchAsync(device, dbchunk, mybatch, imgXform = xform, labelXform=batch.NullXform())
+
 			prediction = model(data)
 			pred.append(prediction)
 			fact.append(labels)

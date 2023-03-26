@@ -295,7 +295,7 @@ async def getBatch(
 	labelXform:Callable = None, 
 	logging=False
 ):
-	print(f"getBatch({imgXform})")
+	#print(f"getBatch({imgXform})")
 	batchsize = len(indices)
 	imglist = []	#for collecting the results from async complete callback
 	labellist = []

@@ -13,7 +13,7 @@ from typing import List, Tuple, Union, Optional
 
 from .. import projconfig
 from . import datasetutils
-from ..pipeline import loadMNIST
+from ..pipeline import loadMNIST, trainutils
 
 #comment out CoShNet dependencies:
 #from ..pipeline import trainutils
@@ -43,7 +43,7 @@ def load_fashion(
 	train_set = loadMNIST.getdb(datasets_root, istrain=True, kTensor = kTensor)
 	test_set = loadMNIST.getdb(datasets_root, istrain=False, kTensor = kTensor)
 
-	#train_set, test_set = trainutils.getTrainTest(trset, fashion_train, fashion_test, useCDF=True)
+	train_set, test_set = trainutils.getTrainTest(trset, train_set, test_set, useCDF=True)
 
 	#1: subset our training set?
 	#train_set = datasetutils.getBalancedSubset(train_set, 0.2)
