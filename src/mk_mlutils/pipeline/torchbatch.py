@@ -12,19 +12,21 @@ import numpy as np
 import torch
 from typing import Tuple, Callable, Iterable, List, Any, Dict, Union
 
+from mk_mlutils.pipeline import augmentation
+
 from . import batch
 
-class NullXform(object):
+class ToTorchXform(augmentation.Base):
 	""" Null xform 
 	---
 	Args: (N/A).
 
 	"""
-	def __init__(self):
+	def __init__(self, **kwargs):
 		pass
 
 	def __call__(self, sample):
-		return sample
+		return torch.Tensor(sample)
 		
 def batch2device(device, imglist, labels, non_blocking=True):
 	""" send imglist and labels to GPU """
@@ -44,7 +46,8 @@ def getBatchAsync(
 	#1. get batch.
 	imglist, labels = batch.getBatchAsync(dbchunk, batchindices, imgXform, labelXform, logging)
 
-	imglist = imglist
+	print(f"{type(imglist)=}")
+	imglist = torch.tensor(imglist)
 	labels = torch.tensor(labels) #EDIT: dtype brought out.
 	#3. send to device
 	imglist, labels = batch2device(device, imglist, labels)

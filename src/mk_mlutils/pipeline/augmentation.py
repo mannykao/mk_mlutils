@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 """
 
@@ -657,6 +658,9 @@ class Normalize(Base):
 		self.std = std
 
 	def __call__(self, x):
+#		print(f"Normalize({type(x)})")
+		if type(x) is list:
+			x = np.asarray(x)
 		x = x.astype('float32')/255
 		return (x - self.mean) / (self.std)
 

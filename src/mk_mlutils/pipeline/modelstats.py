@@ -48,7 +48,7 @@ def model_predict_basic(model, batchbuilder, xform = None, device = "cpu") -> tu
 
 		for bi, mybatch in enumerate(epoch):
 			#data, labels = mybatch
-			data, labels = torchbatch.getBatchAsync(device, dbchunk, mybatch, imgXform = xform, labelXform=batch.NullXform())
+			data, labels = torchbatch.getBatchAsync(device, dbchunk, mybatch)
 
 			prediction = model(data)
 			pred.append(prediction)
