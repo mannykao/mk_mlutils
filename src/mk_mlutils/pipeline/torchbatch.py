@@ -16,6 +16,8 @@ from mk_mlutils.pipeline import augmentation
 
 from . import batch
 
+
+
 class ToTorchXform(augmentation.Base):
 	""" Null xform 
 	---
@@ -26,13 +28,22 @@ class ToTorchXform(augmentation.Base):
 		pass
 
 	def __call__(self, sample):
-		return torch.Tensor(sample)
+		return torch.from_numpy(sample)
 		
 def batch2device(device, imglist, labels, non_blocking=True):
 	""" send imglist and labels to GPU """
 	imglist = imglist.to(device, non_blocking=non_blocking)
 	labels = labels.to(device, non_blocking=non_blocking)
 	return imglist, labels
+
+def torchify_batch(imglist, labels):
+	"""
+	turn imgs and labels to torch tensor if list of nparray.
+	"""
+	imglist = torch.tensor(imglist) if type(imglist) in [list, np.ndarray] else imglist
+	labels = torch.tensor(labels) if type (labels) in [list, np.ndarray] else labels
+	return imglist, labels
+
 
 def getBatchAsync(
 	device, 
@@ -46,9 +57,9 @@ def getBatchAsync(
 	#1. get batch.
 	imglist, labels = batch.getBatchAsync(dbchunk, batchindices, imgXform, labelXform, logging)
 
-	print(f"{type(imglist)=}")
-	imglist = torch.tensor(imglist)
-	labels = torch.tensor(labels) #EDIT: dtype brought out.
+	#2. make torch tensors if required.
+	imglist, labels = torchify_batch(imglist, labels)
+	
 	#3. send to device
 	imglist, labels = batch2device(device, imglist, labels)
 	return imglist, labels

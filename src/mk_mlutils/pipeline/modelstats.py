@@ -36,7 +36,7 @@ def recordIncorrect(recorder, bi, rest, prediction):
 		if wrongPred[i]:
 			recorder.log(bi, i, rest[i], prediction[i])
 
-def model_predict_basic(model, batchbuilder, xform = None, device = "cpu") -> tuple:
+def model_predict_basic(model, batchbuilder, xform = None, device = "cpu") -> tuple: #TODO: Accept 2 xforms.
 	"""Compute the model prediction on data from the feed."""
 	dbchunk = batchbuilder.dataset
 	pred, fact = [], []
@@ -48,7 +48,7 @@ def model_predict_basic(model, batchbuilder, xform = None, device = "cpu") -> tu
 
 		for bi, mybatch in enumerate(epoch):
 			#data, labels = mybatch
-			data, labels = torchbatch.getBatchAsync(device, dbchunk, mybatch)
+			data, labels = torchbatch.getBatchAsync(device, dbchunk, mybatch, imgXform = xform) #TODO: accept 2 xforms.
 
 			prediction = model(data)
 			pred.append(prediction)
