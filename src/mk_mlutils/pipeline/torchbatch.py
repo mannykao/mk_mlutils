@@ -12,6 +12,8 @@ import numpy as np
 import torch
 from typing import Tuple, Callable, Iterable, List, Any, Dict, Union
 
+import cplxmodule
+
 from mk_mlutils.pipeline import augmentation
 
 from . import batch
@@ -40,10 +42,15 @@ def torchify_batch(imglist, labels):
 	"""
 	turn imgs and labels to torch tensor if list of nparray.
 	"""
-	imglist = torch.tensor(imglist) if type(imglist) in [list, np.ndarray] else imglist
-	labels = torch.tensor(labels) if type (labels) in [list, np.ndarray] else labels
+	dispatch = {
+		list: 		lambda imglist: torch.tensor(imglist),
+		np.ndarray:	lambda imglist: torch.from_numpy(imglist),
+		torch.Tensor: lambda imglist: imglist,
+		cplxmodule.cplx.Cplx: lambda imglist: imglist,
+	}
+	imglist = dispatch[type(imglist)](imglist)
+	labels  = dispatch[type(labels)](labels)
 	return imglist, labels
-
 
 def getBatchAsync(
 	device, 
