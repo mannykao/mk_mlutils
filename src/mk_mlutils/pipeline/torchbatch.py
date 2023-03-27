@@ -42,14 +42,21 @@ def torchify_batch(imglist, labels):
 	"""
 	turn imgs and labels to torch tensor if list of nparray.
 	"""
-	dispatch = {
+	imgdispatch = {
 		list: 		lambda imglist: torch.tensor(imglist),
 		np.ndarray:	lambda imglist: torch.from_numpy(imglist),
 		torch.Tensor: lambda imglist: imglist,
 		cplxmodule.cplx.Cplx: lambda imglist: imglist,
 	}
-	imglist = dispatch[type(imglist)](imglist)
-	labels  = dispatch[type(labels)](labels)
+	labdispatch = {
+		list: 		lambda imglist: torch.tensor(imglist, dtype = torch.long),
+		np.ndarray:	lambda imglist: torch.from_numpy(imglist),
+		torch.Tensor: lambda imglist: imglist,
+		cplxmodule.cplx.Cplx: lambda imglist: imglist,
+	}
+	imglist = imgdispatch[type(imglist)](imglist)
+	labels  = labdispatch[type(labels)](labels)
+
 	return imglist, labels
 
 def getBatchAsync(
@@ -57,12 +64,15 @@ def getBatchAsync(
 	dbchunk, 
 	batchindices, 
 	imgXform:Callable = batch.NullXform(), 
-	labelXform:Callable = batch.NullXform(), 
+	labelXform:Callable = batch.NullLabelXform(), 
 	logging:bool=False
 ):
 	""" Torch version of getBatchAsync() - transpose the imglist and sent to device """
 	#1. get batch.
 	imglist, labels = batch.getBatchAsync(dbchunk, batchindices, imgXform, labelXform, logging)
+
+	#print(f"{labels.dtype=}")
+	#assert(labels.dtype == np.int64)
 
 	#2. make torch tensors if required.
 	imglist, labels = torchify_batch(imglist, labels)

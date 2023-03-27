@@ -51,6 +51,20 @@ class NullXform(augmentation.Base):
 	def __call__(self, sample):
 		return np.asarray(sample)	#convert list to ndarray
 
+class NullLabelXform(augmentation.Base):
+	""" Null xform 
+	---import shnetutil.cplx as shcplx
+
+	Args: (N/A).
+
+	"""
+	def __init__(self, **kwargs):
+		self.kwargs = kwargs
+		pass
+
+	def __call__(self, sample):
+		return np.asarray(sample, dtype=np.int64)	
+
 class BatchBuilderBase(metaclass=abc.ABCMeta):
 	""" An batch generator with support for asyncio and MP xform/augmentation,
 		data echoing etc.
@@ -289,10 +303,10 @@ async def getBatch(
 	dataset, 
 	indices:np.ndarray, 
 	imgXform:Callable = NullXform(), 
-	labelXform:Callable = NullXform(), 
+	labelXform:Callable = NullLabelXform(), 
 	logging=False
-):
-#	print(f"getBatch({imgXform})")
+) -> Tuple[np.ndarray, np.ndarray]:		#TODO: decide on list vs. ndarray
+
 	batchsize = len(indices)
 	imglist = []	#for collecting the results from async complete callback
 	labellist = []
@@ -328,7 +342,7 @@ async def getBatch(
 
 	#TODO: change get1() to directly output to a ndarray
 	#return imglist, labellist
-	return imgXform(imglist), labelXform(labellist)
+	return imgXform(imglist), labelXform(labellist)		#(<2d ndarray>, <1d ndarray(dtype=int64))
 
 def getBatchAsync(
 	dbchunk,
