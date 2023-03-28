@@ -18,19 +18,6 @@ from mk_mlutils.pipeline import augmentation
 
 from . import batch
 
-
-
-class ToTorchXform(augmentation.Base):
-	""" Null xform 
-	---
-	Args: (N/A).
-
-	"""
-	def __init__(self, **kwargs):
-		pass
-
-	def __call__(self, sample):
-		return torch.from_numpy(sample)
 		
 def batch2device(device, imglist, labels, non_blocking=True):
 	""" send imglist and labels to GPU """
