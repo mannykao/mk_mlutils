@@ -50,8 +50,8 @@ def getBatchAsync(
 	device, 
 	dbchunk, 
 	batchindices, 
-	imgXform:Callable = batch.NullXform(), 
-	labelXform:Callable = batch.NullLabelXform(), 
+	imgXform:Callable = augmentation.NullXform(),#batch.NullXform(), 
+	labelXform:Callable = augmentation.NullXform(),#batch.NullLabelXform(), 
 	logging:bool=False
 ):
 	""" Torch version of getBatchAsync() - transpose the imglist and sent to device """
