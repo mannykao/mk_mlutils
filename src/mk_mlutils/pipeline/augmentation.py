@@ -88,11 +88,12 @@ class NumpyToTorchTensor(object):
 		return x
 
 class SendToDevice(object):
-	def __init__(self, device):
+	def __init__(self, device, **kwargs):
 		self.device = device
+		self.kwargs = kwargs
 		return
 	def __call__(self, x):
-		x = x.to(self.device)
+		x = x.to(self.device, **self.kwargs)
 		return x
 
 
@@ -819,6 +820,30 @@ class RepeatDepth(object):
 	def __call__(self, x):
 		x = torch.stack(self.n_times * [torch.tensor(x).clone().to(self.device)], dim = -1)
 		return x
+
+class Batch2Torch(Base):
+	def __init__(self, device, non_blocking: bool = True, dtype = None):
+		self.device = device
+		self.dtype = dtype
+		self.todevice = SendToDevice(device = self.device, non_blocking = non_blocking)
+		self.make_dispatch()
+		return
+
+	def make_dispatch(self):
+
+		self.dispatch = {
+			list: 		lambda imglist: self.todevice(torch.tensor(imglist, dtype = self.dtype)),
+			np.ndarray:	lambda imglist: self.todevice(torch.from_numpy(imglist)),
+			torch.Tensor: lambda imglist: self.todevice(imglist),
+		}
+		if kUseCplx:
+			self.dispatch[cplx.Cplx] = lambda imglist: self.todevice(imglist)
+		return
+
+	def __call__(self, batch):
+		return self.dispatch[type(batch)](batch)
+
+
 
 
 class CaptureAugmentation(NullXform):
