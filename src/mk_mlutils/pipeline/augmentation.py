@@ -254,15 +254,32 @@ class RescaleAllAtOnce(Base):
 	Args:
 		1. size := tuple of sizes wanted on dim of H and W. 
 	"""
-	def __init__(self, size):
+	def __init__(self, size, batchtype: type = list):
 		self.sizeH = size[0]
 		self.sizeW = size[1]
-	def __call__(self, batch, hdim =1, wdim = 2):
-		factorH = self.sizeH/batch.shape[hdim]
-		factorW = self.sizeW/batch.shape[wdim]
+		self.scaler = self.rescale_list if batchtype == list else rescale_ndarray 
+
+	def rescale_list(self, batch):
+		imgs = []
+		for image in batch:
+			h, w = image.shape[:2]
+			
+			new_h, new_w = self.sizeH, self.sizeW
+
+			new_h, new_w = int(new_h), int(new_w)
+
+			img = skimage.transform.resize(image, (new_h, new_w))	#use skimage.transform
+			imgs.append(img)
+		return imgs
+
+	def rescale_ndarray(self, batch):
+		factorH = self.sizeH/batch.shape[self.hdim]
+		factorW = self.sizeW/batch.shape[self.wdim]
 		batch = ndimage.zoom(batch, (1, factorH, factorW), order = 2)
 		return batch
 
+	def __call__(self, batch):
+		return self.scaler(batch)
 
 class RandomShift(Base):
 	"""Randomly shift the images in a batch.
@@ -812,6 +829,31 @@ class ToTensor(object):
 	def __str__(self):
 		return f"ToTensor()"	
 
+class ImgBatchToTensor(Base):
+	"""Convert ndarrays in sample to Tensors."""
+
+	def __call__(self, batch):
+		xformed_batch = []
+		for image in batch:
+			# swap color axis because
+			# numpy image: H x W x C
+			# torch image: C X H X W
+			image = image.transpose((2, 0, 1))
+			xformed_batch.append(image)
+
+		return torch.from_numpy(np.array(xformed_batch, dtype = np.float32))
+
+	def __str__(self):
+		return f"ToTensor()"
+
+
+class OnlyToTensor(Base):
+	"""Only convert to tensor of certain type. Don't do extra stuff."""
+	def __init__(self, dtype = torch.LongTensor):
+		self.dtype = dtype
+	def __call__(self, batch):
+		return torch.from_numpy(np.array(batch)).type(self.dtype)
+
 
 class RepeatDepth(object):
 	def __init__(self, n_times: int = 3, device= "cpu"):
@@ -820,6 +862,7 @@ class RepeatDepth(object):
 	def __call__(self, x):
 		x = torch.stack(self.n_times * [torch.tensor(x).clone().to(self.device)], dim = -1)
 		return x
+
 
 class Batch2Torch(Base):
 	def __init__(self, device, non_blocking: bool = True, dtype = None):
@@ -844,6 +887,21 @@ class Batch2Torch(Base):
 		return self.dispatch[type(batch)](batch)
 
 
+class BSDLabelDrop(Base):
+	"""BSD .mat file read has 5 labels. Pass 1 (index)."""
+	def __init__(self, hack_index: int = 0):
+		self.hack_index = hack_index
+		return
+	def __call__(self, batch):
+		#print(batch)
+		#print(f"{type(batch)}, {batch.shape=}"
+		hacked_batch = []
+		for image in batch:
+			hacked_image = image[:, self.hack_index][0][0][0][0]
+			hacked_batch.append(hacked_image)
+
+		hacked_batch = hacked_batch#.transpose(1, 2, 0)[:,:,:,np.newaxis]
+		return hacked_batch
 
 
 class CaptureAugmentation(NullXform):
