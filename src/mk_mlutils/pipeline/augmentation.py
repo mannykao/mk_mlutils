@@ -849,7 +849,7 @@ class ImgBatchToTensor(Base):
 
 class OnlyToTensor(Base):
 	"""Only convert to tensor of certain type. Don't do extra stuff."""
-	def __init__(self, dtype = torch.LongTensor):
+	def __init__(self, dtype = None):
 		self.dtype = dtype
 	def __call__(self, batch):
 		return torch.from_numpy(np.array(batch)).type(self.dtype)
