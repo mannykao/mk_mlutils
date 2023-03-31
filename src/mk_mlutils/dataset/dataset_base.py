@@ -13,8 +13,11 @@ from collections import Counter, namedtuple
 from typing import List, Union
 from operator import itemgetter
 import numpy as np 
+import torch 	#only for torch.utils.data.Dataset
 
-import torch
+from mk_mlutils.dataset import dataset_base
+from mk_mlutils.pipeline.augmentation_base import BaseXform, NullXform
+
 
 ImageDesc = namedtuple("ImageDesc", "coeffs label")
 
@@ -71,8 +74,31 @@ class DataSet():	#this is compatible with torch.utils.data.Dataset
 			#arr.sum(axis=tuple(range(arr.ndim-1)))
 			self.stats = np.mean(imgs, axis=(0,1,2)), np.std(imgs, axis=(0,1,2))
 		return self.stats
-
 #end of DataSet...
+
+
+class DataSetPipeline(dataset_base.DataSet):	#this is compatible with torch.utils.data.Dataset
+	""" A dataset with an input transform pipeline """
+	def __init__(self, 
+		name='generic',
+		colorspace = "grayscale", 
+		sorted=False,
+		imagepipeline:BaseXform=NullXform(),
+		labelpipeline:BaseXform=NullXform(),
+
+	):
+		super().__init__(name=name, colorspace=colorspace, sorted=sorted)
+		self.imagepipeline = imagepipeline
+		self.labelpipeline = labelpipeline
+
+	def __getitem__(self, index) -> dataset_base.ImageDesc:
+		if index >= len(self):
+			return None
+		image = self.imagepipeline(self.images[index])
+		label = self.labelpipeline(self.labels[index])
+		return dataset_base.ImageDesc(image, label)
+#end of DataSetPipeline...
+
 
 def createDummyDataset(name="dummy", size=10000):
 	dataset = DataSet(name=name)
