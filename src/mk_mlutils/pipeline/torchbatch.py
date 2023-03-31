@@ -20,7 +20,7 @@ from . import batch
 
 
 
-class ToTorchXform(augmentation.Base):
+class ToTorchXform(augmentation.BaseXform):
 	""" Null xform 
 	---
 	Args: (N/A).

@@ -21,6 +21,8 @@ from skimage import transform, restoration
 from scipy import ndimage
 
 from mk_mlutils import projconfig 
+from .augmentation_base import BaseXform as BaseXform
+from .augmentation_base import NullXform as NullXform
 
 from .patching import get_mp_patches, find_patch
 
@@ -165,38 +167,7 @@ class ToTorchTensorDCF(object):
 		return torch.Tensor(imglist)
 
 
-class Base(metaclass=abc.ABCMeta):
-	""" Null xform 
-	---import mk_mlutils.cplx as shcplx
-
-	Args: (N/A).
-
-	"""
-	def __init__(self, **kwargs):
-		self.kwargs = kwargs
-		pass
-
-	def __call__(self, sample):
-		return sample
-
-	def rewind(self):
-		pass	
-
-class NullXform(Base):
-	""" Null xform 
-	---import mk_mlutils.cplx as shcplx
-
-	Args: (N/A).
-
-	"""
-	def __init__(self, **kwargs):
-		self.kwargs = kwargs
-		pass
-
-	def __call__(self, sample):
-		return sample
-
-class Patch(Base):
+class Patch(BaseXform):
 	"""
 	Patch a given set of Numpy Images.
 	---
@@ -215,7 +186,7 @@ class Patch(Base):
 		return self.patcher(dset = images)
 
 
-class Rescale(Base):
+class Rescale(BaseXform):
 	"""Rescale the image in a sample to a given size.
 	---
 	Args:
@@ -246,7 +217,7 @@ class Rescale(Base):
 
 		return img, label
 
-class RescaleAllAtOnce(Base):
+class RescaleAllAtOnce(BaseXform):
 	"""
 	Takes an image and resizes it's H, W to given size.
 	---
@@ -263,7 +234,7 @@ class RescaleAllAtOnce(Base):
 		return batch
 
 
-class RandomShift(Base):
+class RandomShift(BaseXform):
 	"""Randomly shift the images in a batch.
 	---
 	Args:
@@ -336,7 +307,7 @@ class RandomShift(Base):
 		shifted_images = self.ops[direction](images, shift_perc) if shift_perc > 0 else images
 		return shifted_images
 
-class RandomRot(Base):
+class RandomRot(BaseXform):
 	"""Randomly rotate the image in a batch.
 	---
 	Args:
@@ -366,7 +337,7 @@ class RandomRot(Base):
 	def __str__(self):
 		return f"RandomRot({self.rot_range})"
 
-class RandomFlip(Base):
+class RandomFlip(BaseXform):
 	def __init__(self, seed = 42):
 		self.flip_ops = {
 			0: self.noop,
@@ -396,7 +367,7 @@ class RandomFlip(Base):
 		op_index = self.ran.randint(0, 3)
 		return self.flip_ops[op_index](images)
 
-class RandomBlurSharpen(Base):
+class RandomBlurSharpen(BaseXform):
 	def __init__(self, maxBlurSigma = 5, maxSharpenAlpha = 50, seed = 42):
 		self.ops = {
 			0: self.blur,
@@ -434,7 +405,7 @@ class RandomBlurSharpen(Base):
 		rand_alpha = self.ran.randint(10, self.maxSharpenAlpha + 1)
 		return self.ops[rand_op](images, rand_sigma, rand_alpha)
 
-class RandomCrop(Base):
+class RandomCrop(BaseXform):
 	"""Crop randomly the image in a sample.
 	---
 	Args:
@@ -466,7 +437,7 @@ class RandomCrop(Base):
 	def __str__(self):
 		return f"RandomCrop({self.output_size})"	
 
-class Rotate(Base):
+class Rotate(BaseXform):
 	"""
 	Rotate all images in a given image.
 	---
@@ -483,7 +454,7 @@ class Rotate(Base):
 	def __str__(self):
 		return f"Rotate({self.angle})"
 
-class Sequential(Base):
+class Sequential(BaseXform):
 	"""
 	A Sequential class to do multiple xforms one after another.
 	---
@@ -509,7 +480,7 @@ class Sequential(Base):
 			mystr += f"  {i}: {xform.__str__()}\n"
 		return mystr
 
-	def locate(target:Base) -> int:
+	def locate(target:BaseXform) -> int:
 		""" Locate the 'stage' in our pipeline and returns its index """
 		index = -1
 		for i, stage in enumerate(self.xforms):
@@ -518,7 +489,7 @@ class Sequential(Base):
 		return index		
 
 if kUseCplx:
-	class CoShREM(Base):
+	class CoShREM(BaseXform):
 		"""
 		A class for implementing CoShREM based edge and ridge detector [1].
 		---
@@ -589,7 +560,7 @@ if kUseCplx:
 #endif of CoShREM
 
 
-class GaussianNoise(Base):
+class GaussianNoise(BaseXform):
 	"""
 	Apply Random Noise to Batch of Images.
 	"""
@@ -608,7 +579,7 @@ class GaussianNoise(Base):
 		x = x + self.ran.normal(self.mean, self.sigma, (x.shape[0], x.shape[1], x.shape[2]))
 		return x
 
-class GaussianBlur(Base):
+class GaussianBlur(BaseXform):
 	"""
 	Apply Gaussian Noise to Batch of Images.
 	"""
@@ -626,7 +597,7 @@ class GaussianBlur(Base):
 		return x
 
 
-class MinMaxScaler(Base):
+class MinMaxScaler(BaseXform):
 	"""
 	MinMaxScale the image in a sample to [0,1].
 
@@ -643,7 +614,7 @@ class MinMaxScaler(Base):
 		return (x - self.min) / (self.max - self.min)
 
 
-class Normalize(Base):
+class Normalize(BaseXform):
 	"""
 	Rescale the image in a sample to [-1,1].
 
@@ -668,7 +639,7 @@ class Normalize(Base):
 		return f"Normalize({self.mean}, {self.std})"	
 
 if kUseCplx:
-	class Denoise(Base):
+	class Denoise(BaseXform):
 		"""
 		Class to implement one-step hard thresholding using the RMS for Sh Coeff. 
 		Denoising.
@@ -708,7 +679,7 @@ if kUseCplx:
 			return f"Denoise(sigma={self.sigma})"
 
 
-	class ComplexNormalize(Base):
+	class ComplexNormalize(BaseXform):
 		"""
 		Complex Normalization of the given image.
 		x:= a+ib;
@@ -759,7 +730,7 @@ if kUseCplx:
 #end of kUseCplx
 
 
-class RgbExtract(Base):
+class RgbExtract(BaseXform):
 	"""
 	Extract 1 channel from Rgb
 	---
@@ -776,7 +747,7 @@ class RgbExtract(Base):
 		return f"RgbExtract({self.channel})"	
 
 
-class Pad(object):
+class Pad(object):	#TODO: is this a BaseXform?
 	"""
 	Pad the image by a given amount.
 

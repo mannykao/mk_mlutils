@@ -12,7 +12,7 @@ from collections import namedtuple
 from typing import List, Tuple, Union, Optional
 
 from .. import projconfig
-from . import datasetutils
+from . import datasetutils, datasetpipeline
 from ..pipeline import loadMNIST, trainutils
 
 #comment out CoShNet dependencies:

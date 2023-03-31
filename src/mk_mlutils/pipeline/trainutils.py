@@ -24,8 +24,6 @@ from mk_mlutils.modelling import modelfactory
 from mk_mlutils.pipeline import augmentation, batch 
 from mk_mlutils.utils import torchutils, trace
 
-from cplxnn.pipeline import dbaugmentations
-
 kUseCplx=projconfig.kUseCplx
 
 
@@ -99,8 +97,8 @@ class TrainingParams():
 		""" check to see if user passed a good set of parameters """
 		train_xform = self.params['train'].pipeline
 		test_xform  = self.params['test'].pipeline
-		assert(issubclass(type(train_xform), augmentation.Base))
-		assert(issubclass(type(test_xform), augmentation.Base))
+		assert(issubclass(type(train_xform), augmentation.BaseXform))
+		assert(issubclass(type(test_xform), augmentation.BaseXform))
 		#assert(isinstance(self.params['recipe'], modelfactory.Recipe_base))
 		return True	
 
@@ -183,44 +181,47 @@ class OneRun():
 		return iter((self.train_params, self.overrides))
 #end OneRun
 
-def loadAugCache(
-	ourTransform: augmentation.Base, 
-	dataset, 
-	batchsize:int = 512, 
-	kRemove:bool = True, 
-	kLogging:bool = True
-) -> dbaugmentations.CaptureAugmentation:
-	#1: insert BatchCache as final stage in the augmentation pipeline
-	#ourTransform  = ourAugmentations(dataset.kMean, dataset.kStd)
-	capturecache = ourTransform[-1]
-	if isinstance(capturecache, dbaugmentations.CaptureAugmentation):
-		capturecache.reset()
-		capturecache.setcapture(True)
+if kUseCplx:
+	from cplxnn.pipeline import dbaugmentations
 
-		tic1 = time.time()
-		#2.0: create a standard BatchBuilder
-		batchbuilder = batch.BatchBuilder(dataset=dataset, batchsize=batchsize, shuffle=False)
-		epoch = batchbuilder.epoch()
-		#2.1: iterate all the batches and apply our xform to enable them to be captured in 'capturecache'
-		for b, mybatch in enumerate(epoch):
-			imglist, labels = batch.getBatchAsync(dataset, mybatch)
-			imglist = ourTransform(imglist)
-		capturecache.finalize()
+	def loadAugCache(
+		ourTransform: augmentation.BaseXform, 
+		dataset, 
+		batchsize:int = 512, 
+		kRemove:bool = True, 
+		kLogging:bool = True
+	) -> dbaugmentations.CaptureAugmentation:
+		#1: insert BatchCache as final stage in the augmentation pipeline
+		#ourTransform  = ourAugmentations(dataset.kMean, dataset.kStd)
+		capturecache = ourTransform[-1]
+		if isinstance(capturecache, dbaugmentations.CaptureAugmentation):
+			capturecache.reset()
+			capturecache.setcapture(True)
 
-		augcache = capturecache.cache
-		assert(issubclass(type(augcache), batch.BatchCache))
-		assert(type(capturecache) == dbaugmentations.CaptureAugmentation)
+			tic1 = time.time()
+			#2.0: create a standard BatchBuilder
+			batchbuilder = batch.BatchBuilder(dataset=dataset, batchsize=batchsize, shuffle=False)
+			epoch = batchbuilder.epoch()
+			#2.1: iterate all the batches and apply our xform to enable them to be captured in 'capturecache'
+			for b, mybatch in enumerate(epoch):
+				imglist, labels = batch.getBatchAsync(dataset, mybatch)
+				imglist = ourTransform(imglist)
+			capturecache.finalize()
 
-		if kLogging:
-			time_spent(tic1, f"loadAugCache", count=1)	#5.09s for 10k test cifar10
-		if kRemove:
-			#print(f"before removeCaching {ourTransform}")
-			dbaugmentations.removeCaching(ourTransform)
-			#print(f"after removeCaching {ourTransform}")
-	else:
-		capturecache = ourTransform
-				
-	return capturecache
+			augcache = capturecache.cache
+			assert(issubclass(type(augcache), batch.BatchCache))
+			assert(type(capturecache) == dbaugmentations.CaptureAugmentation)
+
+			if kLogging:
+				time_spent(tic1, f"loadAugCache", count=1)	#5.09s for 10k test cifar10
+			if kRemove:
+				#print(f"before removeCaching {ourTransform}")
+				dbaugmentations.removeCaching(ourTransform)
+				#print(f"after removeCaching {ourTransform}")
+		else:
+			capturecache = ourTransform
+					
+		return capturecache
 
 prettylist2g = lambda l : '%s' % '|'.join("%.2g" % x for x in l)
 

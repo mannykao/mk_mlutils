@@ -37,7 +37,7 @@ kVerifyResults=False
 
 # https://pymotw.com/3/asyncio/executors.html
 
-class NullXform(augmentation.Base):
+class NullXform(augmentation.BaseXform):
 	""" Null xform 
 	---import shnetutil.cplx as shcplx
 
@@ -51,7 +51,7 @@ class NullXform(augmentation.Base):
 	def __call__(self, sample):
 		return np.asarray(sample)	#convert list to ndarray
 
-class NullLabelXform(augmentation.Base):
+class NullLabelXform(augmentation.BaseXform):
 	""" Null xform 
 	---import shnetutil.cplx as shcplx
 
