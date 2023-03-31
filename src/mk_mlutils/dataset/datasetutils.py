@@ -9,6 +9,7 @@ Created on Thurs July 6 17:44:29 2020
 
 """
 from collections import Counter, namedtuple
+from typing import List, Union, Tuple
 from operator import itemgetter
 import numpy as np 
 
@@ -81,6 +82,17 @@ def test_getBalancedSubsetCDF():
 	subset_stats = dataset_base.DatasetStats(subset)
 	print(f"{subset_stats.labelCounts(sort=True)=}")
 	#subset_stats.dumpDatasetInfo()
+
+def getShapeMinMax(dataset, maxdim:int=8096) -> Tuple[np.ndarray, np.ndarray]:
+	smin = np.array([maxdim, maxdim, 3])
+	smax = np.zeros(3)
+
+	for i, entry in enumerate(dataset):
+		img, label = entry
+		#print(img.shape)
+		smin = np.minimum(smin, img.shape)
+		smax = np.maximum(smax, img.shape)
+	return smin.astype(int), smax.astype(int)
 
 
 if __name__ == '__main__':

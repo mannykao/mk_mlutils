@@ -13,18 +13,31 @@ from collections import Counter, namedtuple
 from typing import List, Union
 from operator import itemgetter
 import numpy as np 
+import torch 	#only for torch.utils.data.Dataset
 
-import torch
+from mk_mlutils.pipeline.augmentation_base import BaseXform, NullXform
+from mk_mlutils.pipeline.augmentation import Rescale, Pad2Size
+
 
 ImageDesc = namedtuple("ImageDesc", "coeffs label")
 
 class DataSet():	#this is compatible with torch.utils.data.Dataset
-	def __init__(self, name='generic', colorspace = "grayscale", sorted=False):
-		self.images = []
-		self.labels = []
+	def __init__(self, 
+		name:str = 'generic', 
+		colorspace = "grayscale", 
+		sorted:bool = False,
+		imagepipeline:BaseXform=NullXform(),
+		labelpipeline:BaseXform=NullXform(),
+	):
+#		print(f"DataSet({name})")
 		self.name = name
 		self._colorspace = colorspace
 		self._isSorted = sorted		
+		self.imagepipeline = imagepipeline
+		self.labelpipeline = labelpipeline
+		
+		self.images = []
+		self.labels = []
 		self.stats = None
 
 	def start(self):
@@ -39,10 +52,19 @@ class DataSet():	#this is compatible with torch.utils.data.Dataset
 	def isSorted(self):
 		return self._isSorted
 
+	def getImage(self, index):	
+		return self.imagepipeline(self.images[index])
+
+	def getLabel(self, index):	
+		return self.labelpipeline(self.labels[index])
+
 	def __getitem__(self, index) -> ImageDesc:
 		if index >= len(self):
 			return None
-		return ImageDesc(self.images[index], self.labels[index])
+		print(f"[{index}] {type(self.imagepipeline)}", end='')
+		image = self.getImage(index)
+		label = self.getLabel(index)
+		return ImageDesc(image, label)
 
 	def __len__(self):
 		return len(self.images)
@@ -71,8 +93,8 @@ class DataSet():	#this is compatible with torch.utils.data.Dataset
 			#arr.sum(axis=tuple(range(arr.ndim-1)))
 			self.stats = np.mean(imgs, axis=(0,1,2)), np.std(imgs, axis=(0,1,2))
 		return self.stats
-
 #end of DataSet...
+
 
 def createDummyDataset(name="dummy", size=10000):
 	dataset = DataSet(name=name)

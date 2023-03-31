@@ -195,7 +195,7 @@ class Rescale(BaseXform):
 			to output_size keeping aspect ratio the same.
 	"""
 
-	def __init__(self, output_size):
+	def __init__(self, output_size:Union[int, tuple]):
 		assert isinstance(output_size, (int, tuple))
 		self.output_size = output_size
 
@@ -747,7 +747,7 @@ class RgbExtract(BaseXform):
 		return f"RgbExtract({self.channel})"	
 
 
-class Pad(object):	#TODO: is this a BaseXform?
+class Pad(BaseXform):
 	"""
 	Pad the image by a given amount.
 
@@ -756,16 +756,48 @@ class Pad(object):	#TODO: is this a BaseXform?
 		1. sizes = pad sizes on respective axes.
 		2. padval = value with which to conduct padding. (default is zero padding).
 	"""
-	def __init__(self, sizes, padval = 0):
+	def __init__(self, sizes, padval = 0, mode:str='constant'):
 		self.sizes = sizes
 		self.padval = padval
-		self.mode = 'constant'
+		self.mode = mode
 
 	def __call__(self, x):
 		x = np.pad(x, self.sizes, mode = self.mode, constant_values = self.padval)
 		return x
+
 	def __str__(self):
 		return f"Pad({self.sizes}, {self.mode})"	
+
+class Pad2Size(BaseXform):
+	"""
+	Pad the image to a given size.
+
+	---
+	Args:
+		1. shape = output shape for the image.
+		2. padval = value with which to conduct padding. (default is zero padding).
+	"""
+	def __init__(self, 
+		shape:tuple, 		#desired output shape after padding
+		padval = 0,			#padding value 
+		mode:str='constant'	#pad mode
+	):
+		self.shape = shape
+		self.padval = padval
+		self.mode = mode
+
+	def __call__(self, x):
+		shape_d = np.subtract(self.shape, x.shape).astype(int)
+		p_w, p_h = shape_d[0], shape_d[1]
+		pad = ((p_w//2, int(shape_d[0] - p_w//2)), (p_h//2, int(shape_d[1] - p_h//2)), (0,0))
+		#print(f"Pad2SizeX({x.shape} -> {self.shape} {shape_d=} {pad})")
+
+		x = np.pad(x, pad, mode = self.mode, constant_values = self.padval)
+		return x
+
+	def __str__(self):
+		return f"Pad2Size({self.shape}, {self.mode})"
+			
 
 class ToTensor(object):
 	"""Convert ndarrays in sample to Tensors."""

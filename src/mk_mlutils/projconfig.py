@@ -15,7 +15,6 @@ from typing import List, Tuple, Optional, Callable
 from pathlib import Path, PurePosixPath
 
 from mkpyutils import dirutils
-import datasets.utils.projconfig as datasetsprojconfig
 
 #
 # globals configuration for the root of our repo.
