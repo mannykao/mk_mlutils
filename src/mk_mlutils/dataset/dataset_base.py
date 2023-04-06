@@ -15,8 +15,8 @@ from operator import itemgetter
 import numpy as np 
 import torch 	#only for torch.utils.data.Dataset
 
+from mk_mlutils.dataset import dataset_base
 from mk_mlutils.pipeline.augmentation_base import BaseXform, NullXform
-from mk_mlutils.pipeline.augmentation import Rescale, Pad2Size
 
 
 ImageDesc = namedtuple("ImageDesc", "coeffs label")
