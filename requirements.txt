@@ -10,4 +10,6 @@ scikit-learn
 torch==1.13.1
 torchvision==0.14.1
 tqdm
-external/mkpyutils-1.5-py3-none-any.whl
+external/mkpypl/datasets-1.3-py3-none-any.whl
+external/mkpypl/mkpyutils-1.5-py3-none-any.whl
+
