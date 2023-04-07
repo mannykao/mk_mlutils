@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+"""
+Title: Context-Manager to support tracing PyTorch execution
+
+@author: Manny Ko & Ujjawal.K.Panchal
+"""
 from pathlib import Path, PurePosixPath
 from mk_mlutils import projconfig
 

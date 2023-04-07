@@ -4,23 +4,20 @@ Title: Context-Manager to support tracing PyTorch execution
 
 @author: Manny Ko & Ujjawal.K.Panchal
 """
-
-import re
-from collections import namedtuple
-from pathlib import Path, PurePosixPath
-from typing import List, Tuple, Union, Optional
+#from typing import List, Tuple, Union, Optional
 
 from mk_mlutils import projconfig
-import mk_mlutils.dataset.datasetutils as datasetutils
 import mk_mlutils.dataset.fashion as fashion
-
-#from ..pipeline import loadMNIST, augmentation, dbaugmentations, trainutils
 
 kRepoRoot="mk_mlutils/src/mk_mlutils"
 
+#
+# testing fashion.load_fashion() in standalone mode
+#
 
 if __name__ == '__main__':
-	projconfig.setRepoRoot(kRepoRoot, __file__)
+	#1: explicit setting our repo root is no longer necessary, but the following line works
+	#projconfig.setRepoRoot(kRepoRoot, __file__)
 
 	repoRoot = projconfig.getRepoRoot()
 	print(f"{repoRoot=}")

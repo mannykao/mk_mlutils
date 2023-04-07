@@ -100,7 +100,7 @@ if kStandAlone:
 		datasets_root = getDataFolder()
 		return datasets_root / 'CIFAR10'
 else:
-	from datasets.utils.projconfig import getRepoRoot, getFashionMNISTFolder, getMNISTFolder
+	from datasets.utils.projconfig import getRepoRoot, getDataFolder, getFashionMNISTFolder, getMNISTFolder
 	#from datasets.utils.projconfig import createFashionMNISTFolder, createCIFAR10Folder, getCIFAR10Folder
 
 
