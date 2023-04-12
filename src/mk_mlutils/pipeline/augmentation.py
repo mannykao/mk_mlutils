@@ -841,4 +841,76 @@ class CaptureAugmentation(NullXform):
 		batchN = self.batchindex
 		self.batchindex += 1
 		return self.cache[batchN]
-	
+#
+# segtorch support:
+#
+class BSDLabelDrop(BaseXform):
+	"""BSD .mat file read has 5 labels. Pass 1 (index)."""
+	def __init__(self, hack_index: int = 0):
+		self.hack_index = hack_index
+		return
+	def __call__(self, batch):
+		#print(batch)
+		#print(f"{type(batch)}, {batch.shape=}"
+		hacked_batch = []
+		for image in batch:
+			hacked_image = image[:, self.hack_index][0][0][0][0]
+			hacked_batch.append(hacked_image)
+
+		hacked_batch = hacked_batch#.transpose(1, 2, 0)[:,:,:,np.newaxis]
+		return hacked_batch
+
+class OnlyToTensor(BaseXform):
+	"""Only convert to tensor of certain type. Don't do extra stuff."""
+	def __init__(self, dtype = torch.LongTensor):
+		self.dtype = dtype
+	def __call__(self, batch):
+		return torch.from_numpy(np.array(batch)).type(self.dtype)
+
+class ImgBatchToTensor(BaseXform):
+	"""Convert ndarrays in sample to Tensors."""
+
+	def __call__(self, batch):
+		xformed_batch = []
+		for image in batch:
+			# swap color axis because
+			# numpy image: H x W x C
+			# torch image: C X H X W
+			image = image.transpose((2, 0, 1))
+			xformed_batch.append(image)
+
+		return torch.from_numpy(np.array(xformed_batch, dtype = np.float32))
+
+	def __str__(self):
+		return f"ToTensor()"
+
+class RescaleImgBatch(BaseXform):
+	"""Rescale the images in a batch to a given size.
+	---
+	Args:
+		1. output_size (tuple or int): Desired output size. If tuple, output is
+			matched to output_size. If int, smaller of image edges is matched
+			to output_size keeping aspect ratio the same.
+	"""
+
+	def __init__(self, output_size):
+		assert isinstance(output_size, (int, tuple))
+		self.output_size = output_size
+
+	def __call__(self, batch):
+		imgs = []
+		for image in batch:
+			h, w = image.shape[:2]
+			if isinstance(self.output_size, int):
+				if h > w:
+					new_h, new_w = self.output_size * h / w, self.output_size
+				else:
+					new_h, new_w = self.output_size, self.output_size * w / h
+			else:
+				new_h, new_w = self.output_size
+
+			new_h, new_w = int(new_h), int(new_w)
+
+			img = skimage.transform.resize(image, (new_h, new_w))	#use skimage.transform
+			imgs.append(img)
+		return imgs	
