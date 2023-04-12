@@ -12,11 +12,19 @@ import numpy as np
 import torch
 from typing import Tuple, Callable, Iterable, List, Any, Dict, Union
 
-import cplxmodule
+#enable cplx dependent code - mck
+import mk_mlutils.projconfig
+mk_mlutils.projconfig.enable(
+#	kUseCplx=True,		#configure mk_mlutils for full cplx+CoShREM+TT+DCF
+)
+from mk_mlutils.projconfig import kUseCplx as kUseCplx
+
+if kUseCplx:
+	import cplxmodule
 
 from mk_mlutils.pipeline import augmentation
 
-from . import batch
+from mk_mlutils.pipeline import batch
 
 
 
@@ -46,14 +54,16 @@ def torchify_batch(imglist, labels):
 		list: 		lambda imglist: torch.tensor(imglist),
 		np.ndarray:	lambda imglist: torch.from_numpy(imglist),
 		torch.Tensor: lambda imglist: imglist,
-		cplxmodule.cplx.Cplx: lambda imglist: imglist,
 	}
 	labdispatch = {
 		list: 		lambda imglist: torch.tensor(imglist, dtype = torch.long),
 		np.ndarray:	lambda imglist: torch.from_numpy(imglist),
 		torch.Tensor: lambda imglist: imglist,
-		cplxmodule.cplx.Cplx: lambda imglist: imglist,
 	}
+	if kUseCplx:
+		imgdispatch.update({cplxmodule.cplx.Cplx: lambda imglist: imglist})
+		labdispatch.update({cplxmodule.cplx.Cplx: lambda lablist: lablist})
+
 	imglist = imgdispatch[type(imglist)](imglist)
 	labels  = labdispatch[type(labels)](labels)
 
