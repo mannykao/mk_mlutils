@@ -911,6 +911,6 @@ class RescaleImgBatch(BaseXform):
 
 			new_h, new_w = int(new_h), int(new_w)
 
-			img = skimage.transform.resize(image, (new_h, new_w))	#use skimage.transform
+			img = skimage.transform.resize(image, (new_h, new_w), preserve_range = True)
 			imgs.append(img)
 		return imgs
