@@ -9,7 +9,7 @@ Created on Wed Feb 8 7:01:29 2023
 from pathlib import Path, PurePosixPath, PureWindowsPath, PurePath
 from typing import Tuple, Callable, Iterable, List, Any, Dict, Union
 
-import mk_mlutils.utils.importutils as importutils
+from mkpyutils import importutils
 
 kImport1=False
 kImportFolder1=False

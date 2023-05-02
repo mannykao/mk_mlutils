@@ -31,7 +31,8 @@ def grid2d(
 
 if __name__=='__main__':
 	from mk_mlutils import projconfig
-	from mk_mlutils.pipeline import loadMNIST
+	#from mk_mlutils.pipeline import loadMNIST
+	from datasets.mnist import loadMNIST
 
 	projconfig.setRepoRoot(kRepoRoot, __file__)
 

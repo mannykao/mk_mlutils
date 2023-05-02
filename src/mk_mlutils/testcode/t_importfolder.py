@@ -12,7 +12,7 @@ from typing import Tuple, Callable, Iterable, List, Any, Dict, Union
 from setuptools import find_packages
 
 from mkpyutils import folderiter
-import mk_mlutils.utils.importutils as importutils
+from mkpyutils import importutils
 
 kImport1=True
 kImportFolder1=False

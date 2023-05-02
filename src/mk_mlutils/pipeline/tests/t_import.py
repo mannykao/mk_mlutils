@@ -22,7 +22,6 @@ modules =[
 	'bigfilebuildermp',
 	'ImagePatcher',
 #	import mk_mlutils.pipeline.loadCIFAR as loadCIFAR		#use augmentation
-	'loadMNIST',
 	'logutils',
 	'mixup',
 	'patching',
@@ -43,7 +42,6 @@ try:
 	import mk_mlutils.pipeline.bigfilebuildermp as bigfilebuildermp
 	import mk_mlutils.pipeline.ImagePatcher as ImagePatcher
 	import mk_mlutils.pipeline.loadCIFAR as loadCIFAR		#use augmentation
-	import mk_mlutils.pipeline.loadMNIST as loadMNIST
 	import mk_mlutils.pipeline.logutils as logutils
 	import mk_mlutils.pipeline.mixup as mixup
 	import mk_mlutils.pipeline.patching as patching

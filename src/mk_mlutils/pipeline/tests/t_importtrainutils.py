@@ -6,8 +6,7 @@ Created on Wed Feb 8 7:01:29 2023
 
 @author: Manny Ko
 """
-
-import mk_mlutils.utils.importutils as importutils
+from mkpyutils import importutils
 
 try:
 	import mk_mlutils as mk_mlutils

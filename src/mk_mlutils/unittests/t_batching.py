@@ -22,8 +22,6 @@ import mk_mlutils.pipeline.logutils as logutils
 import mk_mlutils.utils.torchutils as torchutils
 
 
-#from ..pipeline import loadMNIST, augmentation, dbaugmentations, trainutils
-
 kRepoRoot="mk_mlutils/src/mk_mlutils"
 
 def test_balancedSubset(validate=0.2) -> Tuple[dataset_base.DataSet, dataset_base.DataSet, dataset_base.DataSet]:

@@ -57,7 +57,9 @@ def getBalancedSubset(
 def test_getBalancedSubsetCDF():
 	# code taken from t_balsubset.py	
 	from mk_mlutils import projconfig
-	from mk_mlutils.pipeline import loadMNIST
+	#from mk_mlutils.pipeline import loadMNIST
+	from datasets.mnist import loadMNIST
+
 
 	kRepoRoot="mk_mlutils/src/mk_mlutils"
 

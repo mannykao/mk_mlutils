@@ -567,7 +567,8 @@ def verifyBatchCache(batchbuilder, xform):
 
 
 if __name__ == '__main__':
-	from mk_mlutils.pipeline import loadMNIST
+	#from mk_mlutils.pipeline import loadMNIST
+	from datasets.mnist import loadMNIST
 
 	fashiondir = projconfig.getFashionMNISTFolder()
 

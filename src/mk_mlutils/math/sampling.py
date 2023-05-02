@@ -229,7 +229,8 @@ if __name__ == '__main__':
 	def test_getBalancedSubsetCDF():
 		# code taken from t_balsubset.py	
 		from mk_mlutils import projconfig
-		from mk_mlutils.pipeline import loadMNIST
+		#from mk_mlutils.pipeline import loadMNIST
+		from datasets.mnist import loadMNIST
 
 		mnistdir = projconfig.getFashionMNISTFolder()
 		print(f"{mnistdir=}")

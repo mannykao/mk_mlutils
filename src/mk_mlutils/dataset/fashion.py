@@ -11,9 +11,11 @@ Created on Fri Aug 20 17:44:29 2021
 from collections import namedtuple
 from typing import List, Tuple, Union, Optional
 
+from datasets.mnist import loadMNIST
+
 from .. import projconfig
 from . import datasetutils
-from ..pipeline import loadMNIST, trainutils
+from ..pipeline import trainutils
 
 #comment out CoShNet dependencies:
 #from ..pipeline import trainutils
