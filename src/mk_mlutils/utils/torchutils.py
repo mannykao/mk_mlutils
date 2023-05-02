@@ -96,6 +96,7 @@ def initSeeds(seed=1):
 	random.seed(seed)
 	torch.manual_seed(seed)
 	torch.cuda.manual_seed(seed)
+	torch.cuda.manual_seed_all(seed)		#lmu_psmnist.py
 	np.random.seed(seed)
 
 def onceInit(kCUDA=False, cudadevice='cuda:0', seed=1):
@@ -106,11 +107,13 @@ def onceInit(kCUDA=False, cudadevice='cuda:0', seed=1):
 		else:
 			device = torch.device(cudadevice)
 			torch.cuda.set_device(device)
+		torch.cuda.empty_cache()
 	else:
 		device = 'cpu'
 
 	print(f"torchutils.onceInit device = {device}")
 	torch.backends.cudnn.deterministic = True
+	torch.backends.cudnn.benchmark = False		#lmu_psmnist.py
 	torch.backends.cudnn.enabled = kCUDA
 
 	initSeeds(seed)
