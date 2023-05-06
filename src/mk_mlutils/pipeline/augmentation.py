@@ -757,7 +757,11 @@ class Pad(BaseXform):
 		1. sizes = pad sizes on respective axes.
 		2. padval = value with which to conduct padding. (default is zero padding).
 	"""
-	def __init__(self, sizes, padval = 0, mode:str='constant'):
+	def __init__(self, 
+		sizes, 			#amount of padding for each axises
+		padval = 0, 
+		mode:str='constant'
+	):
 		self.sizes = sizes
 		self.padval = padval
 		self.mode = mode
@@ -768,6 +772,7 @@ class Pad(BaseXform):
 
 	def __str__(self):
 		return f"Pad({self.sizes}, {self.mode})"	
+
 
 class Pad2Size(BaseXform):
 	"""
@@ -788,13 +793,14 @@ class Pad2Size(BaseXform):
 		self.mode = mode
 
 	def __call__(self, x):
-		shape_d = np.subtract(self.shape, x.shape).astype(int)
+		img, label = x
+		shape_d = np.subtract(self.shape, img.shape).astype(int)
 		p_w, p_h = shape_d[0], shape_d[1]
 		pad = ((p_w//2, int(shape_d[0] - p_w//2)), (p_h//2, int(shape_d[1] - p_h//2)), (0,0))
 		#print(f"Pad2SizeX({x.shape} -> {self.shape} {shape_d=} {pad})")
 
-		x = np.pad(x, pad, mode = self.mode, constant_values = self.padval)
-		return x
+		x = np.pad(img, pad, mode = self.mode, constant_values = self.padval)
+		return x, label
 
 	def __str__(self):
 		return f"Pad2Size({self.shape}, {self.mode})"
