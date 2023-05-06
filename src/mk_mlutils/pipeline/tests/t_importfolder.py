@@ -12,7 +12,7 @@ from typing import Tuple, Callable, Iterable, List, Any, Dict, Union
 from mkpyutils import importutils
 
 kImport1=False
-kImportFolder1=False
+kImportFolder1=True
 
 try:
 	import mk_mlutils as mk_mlutils
@@ -45,6 +45,7 @@ if __name__ == "__main__":
 		print(importutils.import1('mk_mlutils.utils', 'trace'))
 
 	path = Path(__file__).parent.parent.parent
+	print(f"{path=}")
 
 	if kImportFolder1:
 		importutils.importFolder('mk_mlutils.utils', path/'utils')

@@ -209,13 +209,14 @@ class Rescale(BaseXform):
 			else:
 				new_h, new_w = self.output_size, self.output_size * w / h
 		else:
-			new_h, new_w = self.output_size
+			new_h, new_w, _ = self.output_size
 
 		new_h, new_w = int(new_h), int(new_w)
+	 	#TODO: support non-RGB images too
+		img = transform.resize(image, (new_h, new_w, self.output_size[2]))
 
-		img = skimage.transform.resize(image, (new_h, new_w))	#use skimage.transform
+		return (img, label)
 
-		return img, label
 
 class RescaleAllAtOnce(BaseXform):
 	"""

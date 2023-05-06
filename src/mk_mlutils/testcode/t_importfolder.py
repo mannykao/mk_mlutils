@@ -71,6 +71,7 @@ if __name__ == "__main__":
 
 	if kImportFolder1:
 		importFolder('mk_mlutils.dataset', path/'dataset')
+		print(" ")
 
 	if kImportFolder2:
 		for folder in modulefolder:
@@ -78,6 +79,7 @@ if __name__ == "__main__":
 			modules = importutils.importFolder(f'mk_mlutils.{folder}', path/folder, logging=True)
 			print(modules, len(modules))
 			assert(any(module is not None for module in modules))
+		print(" ")
 
 	if kSetuptools:		
 		srcroot = Path(__file__).parent.parent.parent
@@ -91,4 +93,4 @@ if __name__ == "__main__":
 					print(f"imported {imp1.__name__} as {imp1.__package__}")
 				else:
 					print(f" '{imp1.errmsg}'")	
-	
+		print(" ")

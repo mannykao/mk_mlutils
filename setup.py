@@ -16,6 +16,21 @@ from setuptools import find_packages
 packages=find_packages(where='src')
 print(f"{packages=}")
 
+requirements=[
+	"numpy",
+	"matplotlib",
+	"pillow",			#PIL
+	"pydantic",
+	"scipy",
+	"scikit-learn",
+	"scikit-image",
+	"funcsigs",
+	"torch==1.13.1",	#temporarily pinned to this version until we sort it out
+	"torchvision==0.14.1",
+	"torchsummary", 
+]
+requirements = []
+
 setuptools.setup(name='mk_mlutils',
 	version='1.4',
 	description='ML and PyTorch Utilies',
@@ -27,16 +42,5 @@ setuptools.setup(name='mk_mlutils',
 	include_package_data=True,
 	package_data={'': ['bases/*.npy']},
 	python_requires='>=3.8',
-	install_requires=[
-		"numpy",
-		"matplotlib",
-		"pillow",			#PIL
-		"pydantic",
-		"scipy",
-		"scikit-learn",
-		"funcsigs",
-		"torch==1.13.1",	#temporarily pinned to this version until we sort it out
-		"torchvision==0.14.1",
-		"torchsummary", 
-	],
+	install_requires=requirements,
 )
