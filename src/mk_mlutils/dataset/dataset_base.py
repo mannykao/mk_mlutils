@@ -61,9 +61,12 @@ class DataSet():	#this is compatible with torch.utils.data.Dataset
 	def __getitem__(self, index) -> ImageDesc:
 		if index >= len(self):
 			return None
-		print(f"[{index}] {type(self.imagepipeline)}", end='')
+#		print(f"[{index}] {type(self.imagepipeline)}", end='')
 		image = self.getImage(index)
 		label = self.getLabel(index)
+		#image = self.imagepipeline(image)
+		#label = self.labelpipeline(label)
+
 		return ImageDesc(image, label)
 
 	def __len__(self):
