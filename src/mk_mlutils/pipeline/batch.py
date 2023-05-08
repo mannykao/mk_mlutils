@@ -20,7 +20,8 @@ import asyncio
 #our modules
 from mk_mlutils import projconfig
 from mk_mlutils.dataset import dataset_base
-from mk_mlutils.pipeline import augmentation
+#from mk_mlutils.pipeline import augmentation
+from mk_mlutils.pipeline.augmentation_base import BaseXform, NullXform
 from mk_mlutils.utils import torchutils
 
 from mkpyutils.testutil import time_spent
@@ -37,9 +38,8 @@ kVerifyResults=False
 
 # https://pymotw.com/3/asyncio/executors.html
 
-class NullXform(augmentation.BaseXform):
-	""" Null xform 
-	---import shnetutil.cplx as shcplx
+class NullXform(BaseXform):
+	""" Null image xform 
 
 	Args: (N/A).
 
@@ -48,12 +48,12 @@ class NullXform(augmentation.BaseXform):
 		self.kwargs = kwargs
 		pass
 
-	def __call__(self, sample):
+	def __call__(self, sample:np.ndarray) -> np.ndarray:
+		""" getBatchAsync() yields a list - convert that to an ndarray """
 		return np.asarray(sample)	#convert list to ndarray
 
-class NullLabelXform(augmentation.BaseXform):
-	""" Null xform 
-	---import shnetutil.cplx as shcplx
+class NullLabelXform(BaseXform):
+	""" Null label xform 
 
 	Args: (N/A).
 
@@ -62,8 +62,10 @@ class NullLabelXform(augmentation.BaseXform):
 		self.kwargs = kwargs
 		pass
 
-	def __call__(self, sample):
+	def __call__(self, sample: np.ndarray) -> np.ndarray:
+		""" getBatchAsync() yields a list - convert that to an ndarray """
 		return np.asarray(sample, dtype=np.int64)	
+
 
 class BatchBuilderBase(metaclass=abc.ABCMeta):
 	""" An batch generator with support for asyncio and MP xform/augmentation,
@@ -77,6 +79,8 @@ class BatchBuilderBase(metaclass=abc.ABCMeta):
 		num_workers = 4,	#TODO: not implemented yet
 		seed=1234, 
 		shuffle = True,		#we almost always want to shuffle
+		imagepipeline=NullXform(),
+		labelpipeline=NullLabelXform()
 	):
 		self.dataset = dataset
 		self.batchsize = batchsize
@@ -85,6 +89,8 @@ class BatchBuilderBase(metaclass=abc.ABCMeta):
 		self.shuffle = shuffle
 		self.size = len(dataset)
 		self.indices = np.arange(self.size)
+		self.imagepipeline = imagepipeline
+		self.labelpipeline = labelpipeline
 
 	def __len__(self):
 		return self.size
@@ -134,8 +140,10 @@ class BatchBuilder(BatchBuilderBase):
 		num_workers = 4,	#TODO: not implemented yet
 		seed=1234, 
 		shuffle = True,		#we almost always want to shuffle
+		imagepipeline=NullXform(),
+		labelpipeline=NullLabelXform()
 	):
-		super().__init__(dataset, batchsize, buffersize, num_workers, seed, shuffle)
+		super().__init__(dataset, batchsize, buffersize, num_workers, seed, shuffle, imagepipeline, labelpipeline)
 		#TODO: use 'buffersize' - currently we are using a shuffle buffer the size of the input
 
 		#https://numpy.org/doc/stable/reference/random/index.html
@@ -145,6 +153,7 @@ class BatchBuilder(BatchBuilderBase):
 		self.cur_batch = None 
 
 	def xformbatch(self, batch):
+		""" No-op batch xform - to be override """
 		return batch
 
 	def rand_indices(self, num):	
@@ -204,6 +213,7 @@ class BatchIterator():
 		indices = builder.rand_indices(len(indices))
 		builder.cur_batch = indices 		#for Minibatch persistency and Data Echoing
 		images, labels = getBatchAsync(builder.dataset, indices)
+		#TODO: call imagepipeline, labelpipeline here
 		return images, labels
 
 
@@ -218,6 +228,7 @@ class Bagging(BatchBuilder):
 		num_workers = 4,	#TODO: not implemented yet
 		seed=1234, 
 		shuffle = False,
+
 	):
 		super().__init__(dataset, batchsize, buffersize, num_workers, seed, shuffle)
 		self.cur_batch = -1
@@ -245,6 +256,7 @@ class Bagging(BatchBuilder):
 		indices = self.rand_indices(len(indices))
 		self.cur_batch = indices 		#for Minibatch persistency and Data Echoing
 		images, labels = getBatchAsync(self.dataset, indices)
+		#TODO: call imagepipeline, labelpipeline here
 		return images, labels
 
 	def epoch(self, kLogging=False):
@@ -361,7 +373,7 @@ def getBatchAsync(
 # Unit test routines:
 #
 
-def test_epochgen(mnist_train, bsize, epochs=1):
+def test_epochgen(mnist_train, bsize, epochs=1, kLogging=False):
 	""" use .epoch() generator on the BatchBuilder """
 	trainbatchbuilder = Bagging(mnist_train, bsize)
 	labels1 = []
@@ -374,13 +386,13 @@ def test_epochgen(mnist_train, bsize, epochs=1):
 			#print(mybatch[10:])
 			images, labels = getBatchAsync(mnist_train, mybatch)
 			#images, label = batch_
-			print(f"[{i,b}]{mybatch.shape}, {images.shape}")
+			if kLogging: print(f"[{i,b}]{mybatch.shape}, {images.shape}")
 			labelcnt.update(labels)
 			labels1.append(labels)
 		print(labelcnt)	
 	return labels1
 		
-def test_selfIter(mnist_train, bsize, epochs=1):
+def test_selfIter(mnist_train, bsize, epochs=1, kLogging=False):
 	""" use iter() on the BatchBuilder itself """
 	trainbatchbuilder = Bagging(mnist_train, bsize)
 	labels2 = []
@@ -390,13 +402,13 @@ def test_selfIter(mnist_train, bsize, epochs=1):
 
 		for b, mybatch in enumerate(trainiter):
 			images, labels = mybatch
-			print(f"[{i,b}]{type(mybatch)}, {images.shape}")
+			if kLogging: print(f"[{i,b}]{type(mybatch)}, {images.shape}")
 			labelcnt.update(labels)
 			labels2.append(labels)
 		print(labelcnt)
 	return labels2	
 
-def test_iterObj(mnist_train, bsize, epochs=1):
+def test_iterObj(mnist_train, bsize, epochs=1, kLogging=False):
 	""" standalone iterator .BatchIterator """
 	trainbatchbuilder = Bagging(mnist_train, bsize)
 	train_loader = BatchIterator(trainbatchbuilder)
@@ -407,7 +419,7 @@ def test_iterObj(mnist_train, bsize, epochs=1):
 
 		for b, mybatch in enumerate(train_loader):
 			images, labels = mybatch
-			print(f"[{i,b}]{type(mybatch)}, {images.shape}")
+			if kLogging: print(f"[{i,b}]{type(mybatch)}, {images.shape}")
 			labelcnt.update(labels)
 			labels1.append(labels)
 		print(labelcnt)	

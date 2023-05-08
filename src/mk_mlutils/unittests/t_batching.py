@@ -30,7 +30,7 @@ def test_balancedSubset(validate=0.2) -> Tuple[dataset_base.DataSet, dataset_bas
 	print(f"{len(train)=}, {len(test)=}, {len(validateset)=}")
 	return train, test, validateset
 
-def test_epochgen(mnist_train, bsize, epochs=1):
+def test_epochgen(mnist_train, bsize, epochs=1, kLogging=False):
 	""" use .epoch() generator on the BatchBuilder """
 	trainbatchbuilder = batch.Bagging(mnist_train, bsize)
 	labels1 = []
@@ -43,13 +43,13 @@ def test_epochgen(mnist_train, bsize, epochs=1):
 			#print(mybatch[10:])
 			images, labels = batch.getBatchAsync(mnist_train, mybatch)
 			#images, label = batch_
-			print(f"[{i,b}]{mybatch.shape}, {images.shape}")
+			if kLogging: print(f"[{i,b}]{mybatch.shape}, {images.shape}")
 			labelcnt.update(labels)
 			labels1.append(labels)
 		print(labelcnt)	
 	return labels1
 		
-def test_selfIter(mnist_train, bsize, epochs=1):
+def test_selfIter(mnist_train, bsize, epochs=1, kLogging=False):
 	""" use iter() on the BatchBuilder itself """
 	trainbatchbuilder = batch.Bagging(mnist_train, bsize)
 	labels2 = []
@@ -59,13 +59,13 @@ def test_selfIter(mnist_train, bsize, epochs=1):
 
 		for b, mybatch in enumerate(trainiter):
 			images, labels = mybatch
-			print(f"[{i,b}]{type(mybatch)}, {images.shape}")
+			if kLogging: print(f"[{i,b}]{type(mybatch)}, {images.shape}")
 			labelcnt.update(labels)
 			labels2.append(labels)
 		print(labelcnt)
 	return labels2	
 
-def test_iterObj(mnist_train, bsize:int=256, epochs=1):
+def test_iterObj(mnist_train, bsize:int=256, epochs=1, kLogging=False):
 	""" standalone iterator .BatchIterator """
 	trainbatchbuilder = batch.Bagging(mnist_train, bsize)
 	train_loader = batch.BatchIterator(trainbatchbuilder)
@@ -76,7 +76,7 @@ def test_iterObj(mnist_train, bsize:int=256, epochs=1):
 
 		for b, mybatch in enumerate(train_loader):
 			images, labels = mybatch
-			print(f"[{i,b}]{type(mybatch)}, {images.shape}")
+			if kLogging: print(f"[{i,b}]{type(mybatch)}, {images.shape}")
 			labelcnt.update(labels)
 			labels1.append(labels)
 		print(labelcnt)	
@@ -106,4 +106,4 @@ if __name__ == '__main__':
 
 	train, test, validateset = test_balancedSubset(validate=0.3)
 
-	#unitestBagging(validateset, bsize=512)
+	unitestBagging(validateset, bsize=512)

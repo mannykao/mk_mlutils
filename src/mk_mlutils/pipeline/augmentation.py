@@ -199,7 +199,7 @@ class Rescale(BaseXform):
 		assert isinstance(output_size, (int, tuple))
 		self.output_size = output_size
 
-	def __call__(self, sample):
+	def __call__(self, sample:tuple):
 		image, label = sample
 
 		h, w = image.shape[:2]
@@ -610,7 +610,7 @@ class MinMaxScaler(BaseXform):
 	def __init__(self, min = 0, max = 255):
 		self.min = min
 		self.max = max
-	def __call__(self, x):
+	def __call__(self, x:np.ndarray):
 		x = x.astype('float32')
 		return (x - self.min) / (self.max - self.min)
 
@@ -629,7 +629,7 @@ class Normalize(BaseXform):
 		self.mean = mean
 		self.std = std
 
-	def __call__(self, x):
+	def __call__(self, x:np.ndarray):
 #		print(f"Normalize({type(x)})")
 		if type(x) is list:
 			x = np.asarray(x)
@@ -792,7 +792,7 @@ class Pad2Size(BaseXform):
 		self.padval = padval
 		self.mode = mode
 
-	def __call__(self, x):
+	def __call__(self, x:tuple):
 		img, label = x
 		shape_d = np.subtract(self.shape, img.shape).astype(int)
 		p_w, p_h = shape_d[0], shape_d[1]
@@ -809,7 +809,7 @@ class Pad2Size(BaseXform):
 class ToTensor(object):
 	"""Convert ndarrays in sample to Tensors."""
 
-	def __call__(self, sample):
+	def __call__(self, sample:tuple):
 		image, label = sample
 
 		# swap color axis because

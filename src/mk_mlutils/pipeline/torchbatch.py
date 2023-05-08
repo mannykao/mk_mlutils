@@ -25,19 +25,6 @@ from mk_mlutils.pipeline import augmentation
 from . import batch
 
 
-
-class ToTorchXform(augmentation.BaseXform):
-	""" Null xform 
-	---
-	Args: (N/A).
-
-	"""
-	def __init__(self, **kwargs):
-		pass
-
-	def __call__(self, sample):
-		return torch.from_numpy(sample)
-		
 def batch2device(device, imglist, labels, non_blocking=True):
 	""" send imglist and labels to GPU """
 	imglist = imglist.to(device, non_blocking=non_blocking)
@@ -88,4 +75,18 @@ def getBatchAsync(
 	#3. send to device
 	imglist, labels = batch2device(device, imglist, labels)
 	return imglist, labels
+
+class ToTorchXform(augmentation.BaseXform):
+	""" Null xform but convert to torch.Tensor
+	---
+	Args: (N/A).
+
+	"""
+	def __init__(self, **kwargs):
+		pass
+
+	def __call__(self, sample:tuple):
+		image, label = sample
+		return torch.from_numpy(image), torch.from_numpy(label)
+		
 

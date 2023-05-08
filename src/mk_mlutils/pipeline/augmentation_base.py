@@ -25,7 +25,7 @@ class BaseXform(metaclass=abc.ABCMeta):		#TODO: rename to BaseXform
 		self.kwargs = kwargs
 		pass
 
-	def __call__(self, sample):
+	def __call__(self, sample:tuple):
 		return sample
 
 	def rewind(self):
@@ -42,6 +42,6 @@ class NullXform(BaseXform):
 		self.kwargs = kwargs
 		pass
 
-	def __call__(self, sample):
+	def __call__(self, sample:tuple):
 		return sample
 
