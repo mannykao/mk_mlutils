@@ -20,6 +20,8 @@ from functools import partial
 from skimage import transform, restoration
 from scipy import ndimage
 
+from datasets.utils.xforms import dsxforms
+
 from mk_mlutils import projconfig 
 from .augmentation_base import BaseXform as BaseXform
 from .augmentation_base import NullXform as NullXform
@@ -186,7 +188,7 @@ class Patch(BaseXform):
 		return self.patcher(dset = images)
 
 
-class Rescale(BaseXform):
+class Rescale(dsxforms.Rescale):
 	"""Rescale the image in a sample to a given size.
 	---
 	Args:
@@ -195,26 +197,12 @@ class Rescale(BaseXform):
 			to output_size keeping aspect ratio the same.
 	"""
 
-	def __init__(self, output_size:Union[int, tuple]):
-		assert isinstance(output_size, (int, tuple))
-		self.output_size = output_size
+	def __init__(self, output_size:Union[int, tuple]) -> tuple:
+		super().__init__(output_size)
 
 	def __call__(self, sample:tuple):
 		image, label = sample
-
-		h, w = image.shape[:2]
-		if isinstance(self.output_size, int):
-			if h > w:
-				new_h, new_w = self.output_size * h / w, self.output_size
-			else:
-				new_h, new_w = self.output_size, self.output_size * w / h
-		else:
-			new_h, new_w, _ = self.output_size
-
-		new_h, new_w = int(new_h), int(new_w)
-	 	#TODO: support non-RGB images too
-		img = transform.resize(image, (new_h, new_w, self.output_size[2]))
-
+		img = super().__call__(image)
 		return (img, label)
 
 
@@ -438,7 +426,8 @@ class RandomCrop(BaseXform):
 	def __str__(self):
 		return f"RandomCrop({self.output_size})"	
 
-class Rotate(BaseXform):
+
+class Rotate(dsxforms.Rotate):
 	"""
 	Rotate all images in a given image.
 	---
@@ -446,14 +435,14 @@ class Rotate(BaseXform):
 		1. angle: (int): angle in degrees by which you want to rotate your image.
 	"""
 	def __init__(self, angle: int):
-		self.angle = angle
+		super().__init__(angle)
 		
 	def __call__(self, images):
-		new_images = ndimage.rotate(images, self.angle, axes = (1,2), reshape = False)
-		return np.array(new_images)
+		return super().__call__(images)
 
 	def __str__(self):
 		return f"Rotate({self.angle})"
+
 
 class Sequential(BaseXform):
 	"""
@@ -598,7 +587,7 @@ class GaussianBlur(BaseXform):
 		return x
 
 
-class MinMaxScaler(BaseXform):
+class MinMaxScaler(dsxforms.MinMaxScaler):
 	"""
 	MinMaxScale the image in a sample to [0,1].
 
@@ -608,14 +597,15 @@ class MinMaxScaler(BaseXform):
 		2. max: max value of the dataset.
 	"""
 	def __init__(self, min = 0, max = 255):
-		self.min = min
-		self.max = max
-	def __call__(self, x:np.ndarray):
-		x = x.astype('float32')
-		return (x - self.min) / (self.max - self.min)
+		super().__init__(min, max)
+
+	def __call__(self, entry:tuple) -> tuple:
+		img, label
+		x = super().__call__(img)
+		return x, label
 
 
-class Normalize(BaseXform):
+class Normalize(dsxforms.Normalize):
 	"""
 	Rescale the image in a sample to [-1,1].
 
@@ -626,18 +616,16 @@ class Normalize(BaseXform):
 	"""
 
 	def __init__(self, mean, std):
-		self.mean = mean
-		self.std = std
+		super().__init(mean, std)
 
-	def __call__(self, x:np.ndarray):
-#		print(f"Normalize({type(x)})")
-		if type(x) is list:
-			x = np.asarray(x)
-		x = x.astype('float32')/255
-		return (x - self.mean) / (self.std)
+	def __call__(self, entry:tuple) -> tuple:
+		img, label = entry
+		x = super().__call__(img)
+		return x, label
 
 	def __str__(self):
 		return f"Normalize({self.mean}, {self.std})"	
+
 
 if kUseCplx:
 	class Denoise(BaseXform):
@@ -748,7 +736,7 @@ class RgbExtract(BaseXform):
 		return f"RgbExtract({self.channel})"	
 
 
-class Pad(BaseXform):
+class Pad(dsxforms.Pad):
 	"""
 	Pad the image by a given amount.
 
@@ -762,19 +750,18 @@ class Pad(BaseXform):
 		padval = 0, 
 		mode:str='constant'
 	):
-		self.sizes = sizes
-		self.padval = padval
-		self.mode = mode
+		super().__init__(sizes, padval, mode)
 
-	def __call__(self, x):
-		x = np.pad(x, self.sizes, mode = self.mode, constant_values = self.padval)
-		return x
+	def __call__(self, entry:tuple) -> tuple:
+		img, label = entry
+		x = super().__call__(img)
+		return x, label
 
 	def __str__(self):
 		return f"Pad({self.sizes}, {self.mode})"	
 
 
-class Pad2Size(BaseXform):
+class Pad2Size(dsxforms.Pad2Size):
 	"""
 	Pad the image to a given size.
 
@@ -788,18 +775,11 @@ class Pad2Size(BaseXform):
 		padval = 0,			#padding value 
 		mode:str='constant'	#pad mode
 	):
-		self.shape = shape
-		self.padval = padval
-		self.mode = mode
+		super().__init__(shape, padval, mode)
 
-	def __call__(self, x:tuple):
+	def __call__(self, x:tuple) -> tuple:
 		img, label = x
-		shape_d = np.subtract(self.shape, img.shape).astype(int)
-		p_w, p_h = shape_d[0], shape_d[1]
-		pad = ((p_w//2, int(shape_d[0] - p_w//2)), (p_h//2, int(shape_d[1] - p_h//2)), (0,0))
-		#print(f"Pad2SizeX({x.shape} -> {self.shape} {shape_d=} {pad})")
-
-		x = np.pad(img, pad, mode = self.mode, constant_values = self.padval)
+		x = super().__call__(img)
 		return x, label
 
 	def __str__(self):
