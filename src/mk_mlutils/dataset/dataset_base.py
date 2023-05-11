@@ -16,7 +16,8 @@ import numpy as np
 import torch 	#only for torch.utils.data.Dataset
 
 from mk_mlutils.dataset import dataset_base
-from mk_mlutils.pipeline.augmentation_base import BaseXform, NullXform
+from datasets.utils.xforms import BaseXform, NullXform, NullLabelXform
+#from mk_mlutils.pipeline.augmentation_base import BaseXform, NullXform, NullLabelXform
 
 
 ImageDesc = namedtuple("ImageDesc", "coeffs label")
@@ -27,7 +28,7 @@ class DataSet():	#this is compatible with torch.utils.data.Dataset
 		colorspace = "grayscale", 
 		sorted:bool = False,
 		imagepipeline:BaseXform=NullXform(),
-		labelpipeline:BaseXform=NullXform(),
+		labelpipeline:BaseXform=NullLabelXform(),
 	):
 #		print(f"DataSet({name})")
 		self.name = name

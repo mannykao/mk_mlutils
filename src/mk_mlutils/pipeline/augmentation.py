@@ -37,6 +37,23 @@ if kUseCplx:
 	from cplxnn.cplx import utils as shcplxutils
 
 
+class XformAdapter():
+	""" Adapter to user ('imagepipline', 'labelpipeline' for a DataSet/DataLoader """
+	def __init__(self, 
+		imagepipeline=dsxforms.NullXform,
+		lablepipeline=dsxforms.NullLabelXform,
+		**kwargs
+	):
+		self.kwargs = kwargs
+		self.imagepipeline = imagepipeline
+		self.labelpipeline = labelpipeline
+
+	def __call__(self, entry:tuple) -> tuple:
+		image = self.imagepipeline(entry[0])
+		label = self.labelpipeline(entry[1])
+		return image, label
+
+
 def transpose4Np(imgList):
 	if (len(imgList.shape) == 3): #for gray imgs.
 			imgList = imgList[:,np.newaxis, :, :]
