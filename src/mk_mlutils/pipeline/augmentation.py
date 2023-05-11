@@ -20,7 +20,7 @@ from functools import partial
 from skimage import transform, restoration
 from scipy import ndimage
 
-from datasets.utils.xforms import dsxforms
+from datasets.utils import xforms as dsxforms
 
 from mk_mlutils import projconfig 
 from .augmentation_base import BaseXform as BaseXform
