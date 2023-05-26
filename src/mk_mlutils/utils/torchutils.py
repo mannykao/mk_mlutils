@@ -19,6 +19,9 @@ import torchsummary
 
 from mkpyutils import dirutils
 
+#use the right datatype for FloatTensor
+FloatTensor= torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
+
 #import gpu.cudautils	#we are not using these yet, it has more power and control over cuda
 kSnapShotDir = 'snapshots/'
 
