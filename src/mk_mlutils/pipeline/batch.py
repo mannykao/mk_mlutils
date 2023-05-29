@@ -80,7 +80,8 @@ class BatchBuilderBase(metaclass=abc.ABCMeta):
 		seed=1234, 
 		shuffle = True,		#we almost always want to shuffle
 		imagepipeline=NullXform(),
-		labelpipeline=NullLabelXform()
+		labelpipeline=NullLabelXform(),
+		drop_last:bool=False,
 	):
 		self.dataset = dataset
 		self.batchsize = batchsize
@@ -91,6 +92,7 @@ class BatchBuilderBase(metaclass=abc.ABCMeta):
 		self.indices = np.arange(self.size)
 		self.imagepipeline = imagepipeline
 		self.labelpipeline = labelpipeline
+		self.drop_last = drop_last
 
 	def __len__(self):
 		return self.size
@@ -141,9 +143,10 @@ class BatchBuilder(BatchBuilderBase):
 		seed=1234, 
 		shuffle = True,		#we almost always want to shuffle
 		imagepipeline=NullXform(),
-		labelpipeline=NullLabelXform()
+		labelpipeline=NullLabelXform(),
+		drop_last:bool=False,
 	):
-		super().__init__(dataset, batchsize, buffersize, num_workers, seed, shuffle, imagepipeline, labelpipeline)
+		super().__init__(dataset, batchsize, buffersize, num_workers, seed, shuffle, imagepipeline, labelpipeline, drop_last)
 		#TODO: use 'buffersize' - currently we are using a shuffle buffer the size of the input
 
 		#https://numpy.org/doc/stable/reference/random/index.html
@@ -228,9 +231,9 @@ class Bagging(BatchBuilder):
 		num_workers = 4,	#TODO: not implemented yet
 		seed=1234, 
 		shuffle = False,
-
+		drop_last:bool=False,
 	):
-		super().__init__(dataset, batchsize, buffersize, num_workers, seed, shuffle)
+		super().__init__(dataset, batchsize, buffersize, num_workers, seed, shuffle, drop_last=drop_last)
 		self.cur_batch = -1
 
 	#iterator support - i.e. iter(<Bagging>)	
@@ -247,10 +250,11 @@ class Bagging(BatchBuilder):
 		batchsize = self.batchsize
 		batch_num = self.batch_num
 		offset = batch_num * batchsize
-		self.batch_num += 1
-		if offset >= numentries: 
+		end = offset + batchsize
+		if offset >= numentries or (self.drop_last and (end > numentries)): 
 			raise StopIteration 
-		end = min(offset + batchsize, numentries)
+		end = min(end, numentries)
+		self.batch_num += 1
 		# Bagging here - sample with replacement
 		indices = self.indices[offset:end]
 		indices = self.rand_indices(len(indices))
@@ -308,7 +312,7 @@ def verify2result(myresults1, myresults2):
 #
 GetDesc = namedtuple("GetDesc", "index data")
 
-async def get1(dataset, index):
+async def get1(dataset, index) -> GetDesc:
 	return GetDesc(index, dataset[index])	#tuple(index, BigFile.ImageDesc)
 
 async def getBatch(
@@ -322,12 +326,16 @@ async def getBatch(
 	batchsize = len(indices)
 	imglist = []	#for collecting the results from async complete callback
 	labellist = []
-	
+	#imglist = np.ndarray((batchsize,))
+	#labellist = np.ndarray((batchsize,))
+
 	def oneDone(task):
 		#https://stackoverflow.com/questions/44345139/python-asyncio-add-done-callback-with-async-def
-		myresult = task.result()
-		imglist.append(myresult.data.coeffs)
-		labellist.append(myresult.data.label)	# Torch seems to want labels as torch.long which is int64
+		index, data = task.result()
+		imglist.append(data.coeffs)
+		labellist.append(data.label)	# Torch seems to want labels as torch.long which is int64
+		#imglist[index] = data.coeffs
+		#labellist[index] = data.label
 
 	#1: sort indices to get a sequential access order - optimize IO
 	batch = np.sort(indices)
@@ -592,4 +600,3 @@ if __name__ == '__main__':
 	epochs = 2
 
 	unitestBagging(mnist_train, bsize)
-
