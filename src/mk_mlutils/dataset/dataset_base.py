@@ -29,6 +29,7 @@ class DataSet():	#this is compatible with torch.utils.data.Dataset
 		sorted:bool = False,
 		imagepipeline:BaseXform=NullXform(),
 		labelpipeline:BaseXform=NullLabelXform(),
+		to_torch=None,
 	):
 #		print(f"DataSet({name})")
 		self.name = name
@@ -36,6 +37,7 @@ class DataSet():	#this is compatible with torch.utils.data.Dataset
 		self._isSorted = sorted		
 		self.imagepipeline = imagepipeline
 		self.labelpipeline = labelpipeline
+		self.to_torch = to_torch
 		
 		self.images = []
 		self.labels = []
