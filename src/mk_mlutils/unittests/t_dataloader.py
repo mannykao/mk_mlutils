@@ -18,7 +18,7 @@ from mk_mlutils.pipeline import batch, torchbatch
 
 batchsize=100
 
-kDataLoader=False 	#torch code we want to emulate
+kDataLoader=True 	#torch code we want to emulate
 kBatchBuilder=True
 kBagging=True
 

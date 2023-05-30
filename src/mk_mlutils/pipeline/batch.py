@@ -176,6 +176,8 @@ class BatchBuilder(BatchBuilderBase):
 
 		numentries = len(self.dataset)
 		batchsize = self.batchsize
+		numentries = numentries - (numentries % batchsize) if self.drop_last else numentries
+
 		for start in range(0, numentries, batchsize):
 			end = min(start + batchsize, numentries)
 			batch = self.indices[start:end]
@@ -191,6 +193,7 @@ class BatchIterator():
 		assert(isinstance(batchbuilder, BatchBuilderBase))
 		self.builder = batchbuilder
 		self.batch_num = None
+		self.drop_last = batchbuilder.drop_last
 
 	def __iter__(self):
 		""" iterator support - i.e. iter(<batchbuilder>) """
@@ -207,16 +210,18 @@ class BatchIterator():
 
 		batch_num = self.batch_num
 		offset = batch_num * batchsize
-		self.batch_num += 1
-		if offset >= numentries: 
+		end = offset + batchsize
+		if offset >= numentries or (self.drop_last and (end > numentries)): 
 			raise StopIteration 
-		end = min(offset + batchsize, numentries)
-		# Bagging here - sample with replacement
+		end = min(end, numentries)
+		self.batch_num += 1
+
+		# minibatch sampling + shuffle
 		indices = builder.indices[offset:end]
 		indices = builder.rand_indices(len(indices))
 		builder.cur_batch = indices 		#for Minibatch persistency and Data Echoing
 		images, labels = getBatchAsync(builder.dataset, indices)
-		#TODO: call imagepipeline, labelpipeline here
+
 		return images, labels
 
 
@@ -249,12 +254,14 @@ class Bagging(BatchBuilder):
 		numentries = self.size
 		batchsize = self.batchsize
 		batch_num = self.batch_num
+
 		offset = batch_num * batchsize
 		end = offset + batchsize
 		if offset >= numentries or (self.drop_last and (end > numentries)): 
 			raise StopIteration 
 		end = min(end, numentries)
 		self.batch_num += 1
+
 		# Bagging here - sample with replacement
 		indices = self.indices[offset:end]
 		indices = self.rand_indices(len(indices))
@@ -442,8 +449,8 @@ def unitestBagging(dataset: dataset_base.DataSet, bsize:int=128, epochs:int=1):
 		l1 = labels1[i]
 		l2 = labels2[i]
 		l3 = labels3[i]
-		assert(np.equal(l1, l2).all())
-		assert(np.equal(l1, l3).all())
+	assert(np.equal(l1, l2).all())
+	assert(np.equal(l1, l3).all())
 	print(f"passed assert(np.equal(l1, l2).all())")	
 	print(f"passed assert(np.equal(l1, l3).all())")	
 
