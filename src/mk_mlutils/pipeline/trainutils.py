@@ -60,6 +60,7 @@ class TrainingParams():
 		validate: DataPipeline,
 		batchsize: int = 128,
 		validate_batchsize: int = 512,	#bsize for validate and test runs
+		epochs:int = 1,
 		lr: float = 0.001,
 		trace_test: bool = True, 	#enable tracing during model testing (should default to False)
 		lr_schedule: bool = False,
@@ -79,6 +80,7 @@ class TrainingParams():
 			'validate': validate,
 			'batchsize': 	batchsize,
 			'validate_batchsize': validate_batchsize,
+			'epochs':	epochs,
 			'lr': 			lr,
 			'trace_test':	trace_test,
 			'lr_schedule':	lr_schedule,

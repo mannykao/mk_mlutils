@@ -53,7 +53,6 @@ class XformAdapter():
 		label = self.labelpipeline(entry[1])
 		return image, label
 
-
 def transpose4Np(imgList):
 	if (len(imgList.shape) == 3): #for gray imgs.
 			imgList = imgList[:,np.newaxis, :, :]
@@ -172,7 +171,7 @@ class ToTorchDims(object):
 		imgList = transposeOp(imgList)
 
 		return imgList
-	def __str__(self):
+	def __repr__(self):
 		return f"ToTorchDims()"	
 
 class ToTorchTensorDCF(object):
@@ -221,6 +220,8 @@ class Rescale(dsxforms.Rescale):
 		image, label = sample
 		img = super().__call__(image)
 		return (img, label)
+	def __repr__(self):
+		return f"Rescale({self.output_size})"
 
 
 class RescaleAllAtOnce(BaseXform):
@@ -238,6 +239,8 @@ class RescaleAllAtOnce(BaseXform):
 		factorW = self.sizeW/batch.shape[wdim]
 		batch = ndimage.zoom(batch, (1, factorH, factorW), order = 2)
 		return batch
+	def __repr__(self):
+		return f"RescaleAllAtOnce({self.sizeH}, {self.sizeW})"
 
 
 class RandomShift(BaseXform):
@@ -258,7 +261,8 @@ class RandomShift(BaseXform):
 		4: self.translate_left,
 		}
 		return
-	def __str__(self):
+
+	def __repr__(self):
 		return f"RandomShift({self.max_shift_perc=})"
 		
 	def translate_up(self, images, shift_perc: int = 10):
@@ -313,6 +317,10 @@ class RandomShift(BaseXform):
 		shifted_images = self.ops[direction](images, shift_perc) if shift_perc > 0 else images
 		return shifted_images
 
+	def __repr__(self):
+		return f"RandomShift({self.max_shift_perc}%)"
+
+
 class RandomRot(BaseXform):
 	"""Randomly rotate the image in a batch.
 	---
@@ -340,7 +348,7 @@ class RandomRot(BaseXform):
 		new_images = ndimage.rotate(images, angle, axes = (1,2), reshape = False)
 		return new_images
 
-	def __str__(self):
+	def __repr__(self):
 		return f"RandomRot({self.rot_range})"
 
 class RandomFlip(BaseXform):
@@ -353,8 +361,7 @@ class RandomFlip(BaseXform):
 		self.seed = seed
 		self.setNumpyRandomState_(seed)
 		return
-	def __str__(self):
-		return f"RandomFlip({self.seed=})"
+
 	def setNumpyRandomState_(self, seed: Union[None, int] = None):
 		s = seed if seed else self.seed
 		self.ran = np.random.RandomState(s)
@@ -373,6 +380,10 @@ class RandomFlip(BaseXform):
 		op_index = self.ran.randint(0, 3)
 		return self.flip_ops[op_index](images)
 
+	def __repr__(self):
+		return f"RandomFlip()"
+
+
 class RandomBlurSharpen(BaseXform):
 	def __init__(self, maxBlurSigma = 5, maxSharpenAlpha = 50, seed = 42):
 		self.ops = {
@@ -386,7 +397,7 @@ class RandomBlurSharpen(BaseXform):
 		self.setNumpyRandomState_()
 		return
 
-	def __str__(self):
+	def __repr__(self):
 		return f"RandomBlurSharpen({self.maxBlurSigma=}, {self.maxSharpenAlpha=}, {self.seed=})"
 
 	def setNumpyRandomState_(self, seed: Union[None, int] = None):
@@ -440,7 +451,7 @@ class RandomCrop(BaseXform):
 					  left: left + new_w, :]
 		return images
 
-	def __str__(self):
+	def __repr__(self):
 		return f"RandomCrop({self.output_size})"	
 
 
@@ -774,8 +785,8 @@ class Pad(dsxforms.Pad):
 		x = super().__call__(img)
 		return x, label
 
-	def __str__(self):
-		return f"Pad({self.sizes}, {self.mode})"	
+	def __repr__(self):
+		return f"Pad({self.sizes}, mode={self.mode})"	
 
 
 class Pad2Size(dsxforms.Pad2Size):
@@ -799,9 +810,32 @@ class Pad2Size(dsxforms.Pad2Size):
 		x = super().__call__(img)
 		return x, label
 
-	def __str__(self):
-		return f"Pad2Size({self.shape}, {self.mode})"
+	def __repr__(self):
+		return f"Pad2Size({self.shape}, mode={self.mode})"
 			
+class PadBoth2Size(dsxforms.Pad2Size):
+	"""			
+	Pad the image and its label to a given size.
+	---
+	Args:
+		1. shape = output shape for the image.
+		2. padval = value with which to conduct padding. (default is zero padding).
+	"""
+	def __init__(self, 
+		shape:tuple, 		#desired output shape after padding
+		padval = 0,			#padding value 
+		mode:str='constant'	#pad mode
+	):
+		super().__init__(shape, padval, mode)
+
+	def __call__(self, x:tuple) -> tuple:
+		img, label = x
+		img = super().__call__(img)
+		label = super().__call__(label)
+		return img, label
+
+	def __repr__(self):
+		return f"PadBoth2Size({self.shape}, mode={self.mode})"
 
 class ToTensor(object):
 	"""Convert ndarrays in sample to Tensors."""
@@ -815,9 +849,8 @@ class ToTensor(object):
 		image = image.transpose((2, 0, 1))
 		return torch.from_numpy(image), torch.from_numpy(label)
 
-	def __str__(self):
+	def __repr__(self):
 		return f"ToTensor()"	
-
 
 class RepeatDepth(object):
 	def __init__(self, n_times: int = 3, device= "cpu"):
@@ -826,7 +859,6 @@ class RepeatDepth(object):
 	def __call__(self, x):
 		x = torch.stack(self.n_times * [torch.tensor(x).clone().to(self.device)], dim = -1)
 		return x
-
 
 class CaptureAugmentation(NullXform):
 	""" Capture augmentations into a replay buffer """
@@ -885,7 +917,7 @@ class ImgBatchToTensor(BaseXform):
 
 		return torch.from_numpy(np.array(xformed_batch, dtype = np.float32))
 
-	def __str__(self):
+	def __repr__(self):
 		return f"ToTensor()"
 
 class RescaleImgBatch(BaseXform):
@@ -918,3 +950,7 @@ class RescaleImgBatch(BaseXform):
 			img = skimage.transform.resize(image, (new_h, new_w), preserve_range = True)
 			imgs.append(img)
 		return imgs
+
+	def __repr__(self):
+		return f"RescaleImgBatch({self.output_size})"
+
