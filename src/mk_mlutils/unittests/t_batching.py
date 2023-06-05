@@ -8,7 +8,8 @@ Created on Tues Feb 28 16:01:29 2023
 """
 from collections import namedtuple, Counter
 from pathlib import Path, PurePosixPath
-from typing import List, Tuple, Union, Optional
+from typing import Tuple, Callable, Iterable, List, Any, Dict, Union, Optional
+
 import numpy as np
 
 from mk_mlutils import projconfig
@@ -97,6 +98,31 @@ def unitestBagging(dataset: dataset_base.DataSet, bsize:int=128, epochs:int=1):
 	print(f"passed assert(np.equal(l1, l2).all())")	
 	print(f"passed assert(np.equal(l1, l3).all())")	
 
+def TestBatchBuilderIter(dataloader:batch.BatchBuilder):
+	def test1(validset:Iterable, tag:str=None, kLogging=False):
+		tag = tag if tag else type(validset)
+		print(f" testing '{tag}' iteration..")
+		batches = []
+		for idx, batch in enumerate(validset):
+			images, labels = batch
+			if kLogging: print(f"[{idx}]: {images.shape}, {labels.shape}, {labels.dtype}")
+			batches.append(batch)
+
+	#1: directly iterate a BatchBuilder		
+	batches1 = test1(dataloader)
+	#2: iterate using a BatchIterator
+	batches2 = test1(batch.BatchIterator(dataloader))
+	#3: iterate using the iter() generator
+	batches3 = test1(iter(dataloader))
+
+	assert(batches1 == batches2)
+	assert(batches1 == batches3)
+	print("passed.")
+
+def unitestBatchBuilder(dataset: dataset_base.DataSet, bsize:int=128):
+	loader = batch.BatchBuilder(dataset, batchsize=bsize, shuffle=False, drop_last=True)
+	TestBatchBuilderIter(loader)
+
 
 if __name__ == '__main__':
 	torchutils.onceInit(kCUDA=True, cudadevice='cuda:1')
@@ -107,3 +133,4 @@ if __name__ == '__main__':
 	train, test, validateset = test_balancedSubset(validate=0.3)
 
 	unitestBagging(validateset, bsize=512)
+	unitestBatchBuilder(validateset, bsize=46)

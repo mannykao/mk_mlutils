@@ -132,59 +132,6 @@ def getWeights(dataset):
 
 	return weights
 
-class BatchBuilder(BatchBuilderBase):
-	""" An batch generator with support for asyncio and MP xform/augmentation """
-	def __init__(
-		self,
-		dataset,			#utis.data.Dataset
-		batchsize=16,
-		buffersize=128,		#size of our shuffle buffer
-		num_workers = 4,	#TODO: not implemented yet
-		seed=1234, 
-		shuffle = True,		#we almost always want to shuffle
-		imagepipeline=NullXform(),
-		labelpipeline=NullLabelXform(),
-		drop_last:bool=False,
-	):
-		super().__init__(dataset, batchsize, buffersize, num_workers, seed, shuffle, imagepipeline, labelpipeline, drop_last)
-		#TODO: use 'buffersize' - currently we are using a shuffle buffer the size of the input
-
-		#https://numpy.org/doc/stable/reference/random/index.html
-		ss = np.random.SeedSequence(seed)
-		child_seeds = ss.spawn(num_workers)		#TODO: for MP code
-		self.rng = np.random.Generator(np.random.PCG64(ss))	#PCG64|MT19937
-		self.cur_batch = None 
-
-	def xformbatch(self, batch):
-		""" No-op batch xform - to be override """
-		return batch
-
-	def rand_indices(self, num):	
-		indices = self.rng.integers(low=0, high=self.size, size=num)
-		return indices
-
-	def doshuffle(self):
-		if self.shuffle:
-			self.rng.shuffle(self.indices)
-
-	def epoch(self, kLogging=False):
-		""" our generator which will emit batches 1 at a time for an epoch """
-		self.doshuffle()
-		
-		if kLogging:	
-			print(f"indices: {batchbuilder.indices} {batchbuilder.indices.dtype}")
-
-		numentries = len(self.dataset)
-		batchsize = self.batchsize
-		numentries = numentries - (numentries % batchsize) if self.drop_last else numentries
-
-		for start in range(0, numentries, batchsize):
-			end = min(start + batchsize, numentries)
-			batch = self.indices[start:end]
-			self.cur_batch = self.xformbatch(batch)
-			yield self.cur_batch 	#GENERATOR
-#end.. class BatchBuilder			
-
 class BatchIterator():
 	def __init__(
 		self,
@@ -192,7 +139,7 @@ class BatchIterator():
 	):
 		assert(isinstance(batchbuilder, BatchBuilderBase))
 		self.builder = batchbuilder
-		self.batch_num = None
+		self.batch_num = 0
 		self.drop_last = batchbuilder.drop_last
 
 	def __iter__(self):
@@ -223,6 +170,69 @@ class BatchIterator():
 		images, labels = getBatchAsync(builder.dataset, indices)
 
 		return images, labels
+#endif BatchIterator
+
+
+class BatchBuilder(BatchBuilderBase):
+	""" An batch generator with support for asyncio and MP xform/augmentation """
+	def __init__(
+		self,
+		dataset,			#utis.data.Dataset
+		batchsize=16,
+		buffersize=128,		#size of our shuffle buffer
+		num_workers = 4,	#TODO: not implemented yet
+		seed=1234, 
+		shuffle = True,		#we almost always want to shuffle
+		imagepipeline=NullXform(),
+		labelpipeline=NullLabelXform(),
+		drop_last:bool=False,
+	):
+		super().__init__(dataset, batchsize, buffersize, num_workers, seed, shuffle, imagepipeline, labelpipeline, drop_last)
+		#TODO: use 'buffersize' - currently we are using a shuffle buffer the size of the input
+
+		#https://numpy.org/doc/stable/reference/random/index.html
+		ss = np.random.SeedSequence(seed)
+		child_seeds = ss.spawn(num_workers)		#TODO: for MP code
+		self.rng = np.random.Generator(np.random.PCG64(ss))	#PCG64|MT19937
+		self.cur_batch = None 
+
+	def __iter__(self):
+		""" iterator support - i.e. iter(<batchbuilder>) """
+		return BatchIterator(self)
+
+	def __next__(self):
+		assert(False) 	#should never get here, the next() will go to BatchIterator
+		pass	
+
+	def xformbatch(self, batch):
+		""" No-op batch xform - to be override """
+		return batch
+
+	def rand_indices(self, num):	
+		indices = self.rng.integers(low=0, high=self.size, size=num)
+		return indices
+
+	def doshuffle(self):
+		if self.shuffle:
+			self.rng.shuffle(self.indices)
+
+	def epoch(self, kLogging=False):
+		""" our generator which will emit batches 1 at a time for an epoch """
+		self.doshuffle()
+		
+		if kLogging:	
+			print(f"indices: {batchbuilder.indices} {batchbuilder.indices.dtype}")
+
+		numentries = len(self.dataset)
+		batchsize = self.batchsize
+		numentries = numentries - (numentries % batchsize) if self.drop_last else numentries
+
+		for start in range(0, numentries, batchsize):
+			end = min(start + batchsize, numentries)
+			batch = self.indices[start:end]
+			self.cur_batch = self.xformbatch(batch)
+			yield self.cur_batch 	#GENERATOR
+#end.. class BatchBuilder			
 
 
 class Bagging(BatchBuilder):
