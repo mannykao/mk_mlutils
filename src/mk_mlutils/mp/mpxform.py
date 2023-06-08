@@ -19,7 +19,6 @@ import os, sys, time
 
 #our packages
 from mk_mlutils.pipeline import BigFile, BigFileBuilder
-#from ..dataset import dataset_base
 #our modules
 from datasets import dataset_base
 

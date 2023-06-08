@@ -644,7 +644,7 @@ class Normalize(dsxforms.Normalize):
 	"""
 
 	def __init__(self, mean, std):
-		super().__init(mean, std)
+		super().__init__(mean, std)
 
 	def __call__(self, entry:tuple) -> tuple:
 		img, label = entry

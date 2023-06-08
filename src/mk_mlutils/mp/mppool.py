@@ -177,9 +177,9 @@ class MPPool(metaclass=abc.ABCMeta):
 		pass
 
 if kUnitTest:
-	import mk_mlutils.dataset.dataset_base as dataset_base
 	import mk_mlutils.dataset.fashion as fashion
 	import mk_mlutils.utils.torchutils as torchutils
+	from datasets import dataset_base
 
 	def xformdataset_serial(
 		xform,
