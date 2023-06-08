@@ -12,8 +12,9 @@ from typing import Tuple, Callable, Iterable, List, Any, Dict, Union, Optional
 
 import numpy as np
 
+from datasets import dataset_base
+
 from mk_mlutils import projconfig
-import mk_mlutils.dataset.dataset_base as dataset_base
 import mk_mlutils.dataset.datasetutils as datasetutils
 import mk_mlutils.dataset.fashion as fashion
 

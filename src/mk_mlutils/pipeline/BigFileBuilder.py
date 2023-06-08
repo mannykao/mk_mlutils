@@ -17,10 +17,9 @@ from io import BytesIO
 
 #import our packages
 from mkpyutils import dirutils, folderiter
-from mk_mlutils.dataset import dataset_base
+from datasets import dataset_base
 
-#from . import BigFile
-from . import BigFile
+from mk_mlutils.pipeline import BigFile
 
 
 def time_spent(tic1, tag='', count=1):

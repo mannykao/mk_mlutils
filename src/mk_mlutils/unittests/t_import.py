@@ -12,7 +12,6 @@ try:
 	import mk_mlutils
 	#dataset/
 	import mk_mlutils.dataset
-	import mk_mlutils.dataset.dataset_base as dataset_base
 	import mk_mlutils.dataset.datasetutils as datasetutils
 	import mk_mlutils.dataset.fashion as fashion
 	#math/

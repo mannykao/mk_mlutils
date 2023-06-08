@@ -18,8 +18,10 @@ import torch.nn as nn
 from mkpyutils.classutils import method_exists
 from mkpyutils.testutil import time_spent
 
+from datasets import dataset_base
+
 from mk_mlutils import projconfig
-from mk_mlutils.dataset import dataset_base, datasetutils
+from mk_mlutils.dataset import datasetutils
 from mk_mlutils.modelling import modelfactory
 from mk_mlutils.pipeline import augmentation, batch 
 from mk_mlutils.utils import torchutils, trace
@@ -70,6 +72,7 @@ class TrainingParams():
 		datasetname: Optional[str] = "fashion",
 		trset: Optional[str] = "test",	#for older snapshots that does not have it saved
 		seed: Optional[int] = 1,
+		best:bool = True,				#load the best model snapshot and feed the test set
 		**kwargs
 	):
 		self._params = {
@@ -90,6 +93,7 @@ class TrainingParams():
 			'datasetname': datasetname,
 			'trset': trset,
 			'seed': seed,
+			'best': best,
 		}
 		self.check_params()
 		self.amend(**kwargs)

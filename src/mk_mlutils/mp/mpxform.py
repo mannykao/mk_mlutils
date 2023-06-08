@@ -18,9 +18,10 @@ import signal
 import os, sys, time
 
 #our packages
-from ..pipeline import BigFile, BigFileBuilder
-from ..dataset import dataset_base
+from mk_mlutils.pipeline import BigFile, BigFileBuilder
+#from ..dataset import dataset_base
 #our modules
+from datasets import dataset_base
 
 #
 # https://pymotw.com/3/multiprocessing/communication.html
