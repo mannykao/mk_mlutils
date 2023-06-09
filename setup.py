@@ -29,10 +29,10 @@ requirements=[
 	"torchvision==0.14.1",
 	"torchsummary", 
 ]
-requirements = []
+#requirements = []
 
 setuptools.setup(name='mk_mlutils',
-	version='1.4',
+	version='1.5',
 	description='ML and PyTorch Utilies',
 	author='Manny Ko',
 	author_email='man960@hotmail.com',

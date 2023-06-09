@@ -646,10 +646,10 @@ class Normalize(dsxforms.Normalize):
 	def __init__(self, mean, std):
 		super().__init__(mean, std)
 
-	def __call__(self, entry:tuple) -> tuple:
-		img, label = entry
-		x = super().__call__(img)
-		return x, label
+	def __call__(self, images:np.ndarray) -> np.ndarray:
+		#print(f"Normalize({type(images)}, {images.shape})")
+		x = super().__call__(images)
+		return x
 
 	def __str__(self):
 		return f"Normalize({self.mean}, {self.std})"	
@@ -780,10 +780,9 @@ class Pad(dsxforms.Pad):
 	):
 		super().__init__(sizes, padval, mode)
 
-	def __call__(self, entry:tuple) -> tuple:
-		img, label = entry
-		x = super().__call__(img)
-		return x, label
+	def __call__(self, images:np.ndarray) -> np.ndarray:
+		x = super().__call__(images) 	#TODO: use parent 'dsxforms.Pad' directly
+		return x
 
 	def __repr__(self):
 		return f"Pad({self.sizes}, mode={self.mode})"	
