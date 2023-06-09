@@ -17,9 +17,9 @@ from queue import Empty, Full
 
 #our packages
 from datasets import dataset_base as db
+from datasets.fashionmnist import fashion
 
 from mk_mlutils import projconfig, torchutils
-from mk_mlutils.dataset import fashion
 from mk_mlutils.pipeline import BigFile
 from mk_mlutils.mp import mppool
 

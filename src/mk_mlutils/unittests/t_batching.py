@@ -13,10 +13,10 @@ from typing import Tuple, Callable, Iterable, List, Any, Dict, Union, Optional
 import numpy as np
 
 from datasets import dataset_base
+import datasets.fashionmnist as fashion
 
 from mk_mlutils import projconfig
 import mk_mlutils.dataset.datasetutils as datasetutils
-import mk_mlutils.dataset.fashion as fashion
 
 import mk_mlutils.pipeline.batch as batch
 import mk_mlutils.pipeline.logutils as logutils

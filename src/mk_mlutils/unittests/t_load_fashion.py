@@ -6,8 +6,8 @@ Title: Context-Manager to support tracing PyTorch execution
 """
 #from typing import List, Tuple, Union, Optional
 
+from datasets.fashionmnist import fashion
 from mk_mlutils import projconfig
-import mk_mlutils.dataset.fashion as fashion
 
 kRepoRoot="mk_mlutils/src/mk_mlutils"
 

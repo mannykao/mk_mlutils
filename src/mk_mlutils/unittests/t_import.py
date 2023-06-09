@@ -13,7 +13,7 @@ try:
 	#dataset/
 	import mk_mlutils.dataset
 	import mk_mlutils.dataset.datasetutils as datasetutils
-	import mk_mlutils.dataset.fashion as fashion
+#	import mk_mlutils.dataset.fashion as fashion
 	#math/
 	import mk_mlutils.math.sampling as sampling
 	#modelling/

@@ -29,7 +29,7 @@ requirements=[
 	"torchvision==0.14.1",
 	"torchsummary", 
 ]
-#requirements = []
+requirements = []
 
 setuptools.setup(name='mk_mlutils',
 	version='1.5',

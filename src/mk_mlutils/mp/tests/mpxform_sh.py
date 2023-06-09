@@ -21,8 +21,8 @@ from mkpyutils import dirutils
 from mkpyutils import testutil
 
 from datasets import dataset_base
+import datasets.fashionmnist as fashion
 
-from mk_mlutils.dataset import fashion
 from mk_mlutils.pipeline import batch, augmentation
 from mk_mlutils import coshrem_xform, torchutils
 from mk_mlutils.mp import mpxform, mppool

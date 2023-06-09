@@ -3,9 +3,9 @@ import multiprocessing
 import os, sys, time
 
 from datasets import dataset_base
+import datasets.fashionmnist.fashion as fashion
 
 from mk_mlutils import projconfig
-import mk_mlutils.dataset.fashion as fashion
 import mk_mlutils.utils.torchutils as torchutils
 import mk_mlutils.mp.mppool as mppool
 import mk_mlutils.mp.mpxform as mpxform
