@@ -230,13 +230,13 @@ if __name__ == '__main__':
 		# code taken from t_balsubset.py	
 		from mk_mlutils import projconfig
 		#from mk_mlutils.pipeline import loadMNIST
-		from datasets.mnist import loadMNIST
+		from datasets.mnist import mnist
 
 		mnistdir = projconfig.getFashionMNISTFolder()
 		print(f"{mnistdir=}")
 		fashiondir = projconfig.getFashionMNISTFolder()
-		mnist_test   = loadMNIST.getdb(mnistdir, istrain=False, kTensor = False)
-		fashion_test = loadMNIST.getdb(fashiondir, istrain=False, kTensor = False)
+		mnist_test   = mnist.getdb(mnistdir, istrain=False, kTensor = False)
+		fashion_test = mnist.getdb(fashiondir, istrain=False, kTensor = False)
 
 		mnist_test = dataset_base.SortedDataset(mnist_test)
 		print(f"mnist_test {len(mnist_test)} from {mnistdir}")
