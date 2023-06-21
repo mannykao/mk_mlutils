@@ -27,8 +27,20 @@ from skimage.color import (rgb2lab, rgb2yuv, rgb2ycbcr, lab2rgb, yuv2rgb, ycbcr2
 def err(type_):
 	raise NotImplementedError(f'Color space conversion {type_} not implemented yet')
 
-def convert(input_, type_):
+def getRGBkey(input_space:str) -> str:
+	valid = {
+		'hsv',
+		'lab',
+		'rgb',
+		'ycb',
+		'yuv',
+		'xyz',	
+	}
+	return input_space + '2rgb'
+
+def convert(input_, type_:str):
 	return {
+		'rgb2rgb': input_,
 		'rgb2lab': rgb2lab(input_),
 		'lab2rgb': lab2rgb(input_),
 		'rgb2yuv': rgb2yuv(input_),

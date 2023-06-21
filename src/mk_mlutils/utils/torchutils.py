@@ -112,9 +112,9 @@ def onceInit(kCUDA=False, cudadevice='cuda:0', seed=1):
 			device = torch.device(cudadevice)
 			torch.cuda.set_device(device)
 		torch.cuda.empty_cache()
+		#print(torch.cuda.get_device_name(torch.cuda.current_device()))
 	else:
 		device = 'cpu'
-
 	print(f"torchutils.onceInit device = {device}")
 	torch.backends.cudnn.deterministic = True
 	torch.backends.cudnn.benchmark = False		#lmu_psmnist.py
