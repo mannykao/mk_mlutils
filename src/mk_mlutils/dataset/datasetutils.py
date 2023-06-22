@@ -58,16 +58,14 @@ def getBalancedSubset(
 def test_getBalancedSubsetCDF():
 	# code taken from t_balsubset.py	
 	from mk_mlutils import projconfig
-	#from mk_mlutils.pipeline import loadMNIST
-	from datasets.mnist import loadMNIST
-
+	from datasets.mnist import mnist
 
 	kRepoRoot="mk_mlutils/src/mk_mlutils"
 
 	projconfig.setRepoRoot(kRepoRoot, __file__)
 
 	mnistdir = projconfig.getFashionMNISTFolder()
-	mnist_test = loadMNIST.getdb(mnistdir, istrain=False, kFashion=True, kTensor = False)
+	mnist_test = mnist.getdb(mnistdir, istrain=False, kFashion=True, kTensor = False)
 
 	mnist_test = dataset_base.SortedDataset(mnist_test)
 	print(f"mnist_test {len(mnist_test)} from {mnistdir}")

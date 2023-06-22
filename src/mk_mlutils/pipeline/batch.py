@@ -604,13 +604,12 @@ def verifyBatchCache(batchbuilder, xform):
 
 
 if __name__ == '__main__':
-	#from mk_mlutils.pipeline import loadMNIST
-	from datasets.mnist import loadMNIST
+	from datasets.mnist import mnist
 
 	fashiondir = projconfig.getFashionMNISTFolder()
 
 	#dataset = MNIST('mnist', train=True, download=True, transform=MNIST_TRANSFORM)
-	mnist_train = loadMNIST.getdb(fashiondir, istrain=False, kTensor = False)
+	mnist_train = mnist.getdb(fashiondir, istrain=False, kTensor = False)
 	print(f"mnist_train {len(mnist_train)} from {fashiondir}")
 
 	bsize = 1000

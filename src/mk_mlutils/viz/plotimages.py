@@ -31,14 +31,13 @@ def grid2d(
 
 if __name__=='__main__':
 	from mk_mlutils import projconfig
-	#from mk_mlutils.pipeline import loadMNIST
-	from datasets.mnist import loadMNIST
+	from datasets.mnist import mnist
 
 	projconfig.setRepoRoot(kRepoRoot, __file__)
 
 	mnistfolder = projconfig.getMNISTFolder()
 	print(mnistfolder)
-	mnist_test = loadMNIST.getdb(mnistfolder, istrain=False, kFashion=False, kTensor = False)
+	mnist_test = mnist.getdb(mnistfolder, istrain=False, kFashion=False, kTensor = False)
 
 	grid2d(mnist_test, 5, 2, "MNIST[0:10]")
 

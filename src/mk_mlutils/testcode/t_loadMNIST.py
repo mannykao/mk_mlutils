@@ -7,13 +7,11 @@ Title: Context-Manager to support tracing PyTorch execution
 from typing import Tuple, Callable, Iterable, List, Any, Dict, Union
 
 from mk_mlutils import projconfig
-#from mk_mlutils.pipeline import loadMNIST
-from datasets.mnist import loadMNIST
+from datasets.mnist import mnist
 
 #
-# testing loadMNIST.getdb() and  in standalone mode
+# testing mnist.getdb() and  in standalone mode
 #
-
 class NullXform(object):
 	""" Null xform 
 	---import shnetutil.cplx as shcplx
@@ -43,7 +41,7 @@ if __name__ == '__main__':
 	fashiondir = projconfig.getFashionMNISTFolder()
 
 	#dataset = MNIST('mnist', train=True, download=True, transform=MNIST_TRANSFORM)
-	mnist_train = loadMNIST.getdb(fashiondir, istrain=False, kTensor = False)
+	mnist_train = mnist.getdb(fashiondir, istrain=False, kTensor = False)
 	print(f"mnist_train {len(mnist_train)} from {fashiondir}")
 
 	test = []
