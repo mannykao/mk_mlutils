@@ -113,7 +113,8 @@ class BigChunk(dataset_base.DataSet):	#this is compatible with torch.utils.data.
 		if (self.isopen):
 			self.file.close()
 			self.file = None
-
+			self._header = None 	#tuple(self.header)
+	
 	def finalize(self):
 		self.closefile()
 
@@ -257,6 +258,7 @@ class Big1Chunk(BigChunk):	#this is compatible with torch.utils.data.Dataset
 
 	def openfile(self, filename=None, mode="rb"):
 		super().openfile(filename, mode)
+		
 		if self.isopen and (mode == "rb"):
 			#print(f"openfile {self.num_files}, {self.offset_add}, {self.labels_add}, offsets={self.offsets}")
 			self.read_images(self.offset_add, self.offsets[1]-self.offsets[0])
