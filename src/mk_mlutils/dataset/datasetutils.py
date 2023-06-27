@@ -31,7 +31,7 @@ def getBalancedSubset(
 	""" Sample a subset of 'dataset' while maintain class balance """
 	subsetsize = int(len(dataset)*fraction)
 	dsname = getattr(dataset, 'name', 'unknown')
-	print(f" getBalancedSubset({name=}: {dsname}, {len(dataset)}, {useCDF=})")
+	print(f" getBalancedSubset({name=}: {dsname}, {len(dataset)}, {useCDF=}, {fraction=})")
 
 	# for some data sets (e.g. Fashion) the input is already so well scrambled we can just take a slice.
 	if not useCDF:

@@ -40,6 +40,9 @@ kColorSpaces = {
 def isGrayScale(colorspace:str) -> bool:
 	return colorspace in kGrayScales
 
+def isColor(colorspace:str) -> bool:
+	return not isGrayScale(colorspace)
+
 def nchannels(colorspace:str) -> int:
 	return 1 if colorspace in kGrayScales else 3
 
