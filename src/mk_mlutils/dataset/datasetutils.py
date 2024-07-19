@@ -13,7 +13,7 @@ from typing import List, Union, Tuple
 from operator import itemgetter
 import numpy as np 
 
-from datasets import dataset_base
+from mldatasets import dataset_base
 from mk_mlutils.math import sampling
 
 TrainingSet=namedtuple("DataSet", "train test validate train_aug test_aug validate_aug")
@@ -58,7 +58,7 @@ def getBalancedSubset(
 def test_getBalancedSubsetCDF():
 	# code taken from t_balsubset.py	
 	from mk_mlutils import projconfig
-	from datasets.mnist import mnist
+	from mldatasets.mnist import mnist
 
 	kRepoRoot="mk_mlutils/src/mk_mlutils"
 

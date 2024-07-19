@@ -11,8 +11,10 @@ Created on Mon Mar 16 17:44:29 2020
 from pathlib import Path
 import random
 import numpy as np
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 from collections.abc import Iterable
+from typing import Union, Optional, Tuple
+
 import torch
 import torch.optim as optim
 import torchsummary
@@ -22,6 +24,8 @@ from mkpyutils import dirutils
 #use the right datatype for FloatTensor
 FloatTensor = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
 LongTensor  = torch.cuda.LongTensor if torch.cuda.is_available() else torch.LongTensor
+
+ModelSizes = namedtuple("ModelSizes", "num_w trainable sizeB")
 
 #import gpu.cudautils	#we are not using these yet, it has more power and control over cuda
 kSnapShotDir = 'snapshots/'
@@ -95,8 +99,8 @@ else:
 		return torch.device(devid)		#use this device object instead of the device string
 #if kAutoDetect
 
-def initSeeds(seed=1):
-	print(f"initSeeds({seed})")
+def initSeeds(seed=1, kLogging:bool=False):
+	if kLogging: print(f"initSeeds({seed})")
 	random.seed(seed)
 	torch.manual_seed(seed)
 	torch.cuda.manual_seed(seed)
@@ -106,8 +110,9 @@ def initSeeds(seed=1):
 def onceInit(kCUDA=False, cudadevice='cuda:0', seed=1):
 	#print(f"onceInit {cudadevice}")
 	if kCUDA and torch.cuda.is_available():
+		#did user specify a specific cuda device?
 		if cudadevice is None:
-			device = get_cuda()
+			device = get_cuda() 	#invoke intelligent cuda device discovery to select 'best'
 		else:
 			device = torch.device(cudadevice)
 			torch.cuda.set_device(device)
@@ -243,6 +248,20 @@ def load1model(
 	#print(type(state_dict), len(state_dict))
 	return snapshot
 
+def loadCheckPoint(device, ckpt_dir:str, checkptname:str, logging:bool=False):
+	""" Load a .pth checkpoint file """
+	if Path(checkptname).suffix == "":
+		checkptname += '.pth'
+	ckpt_path = Path(ckpt_dir)/checkptname
+	print(f"{ckpt_path=}")
+	checkpoint = torch.load(str(ckpt_path), map_location=device)	
+
+	return checkpoint
+
+def checkpointSize(checkpoint:torch.nn.Module, details=False, logging=True) -> ModelSizes:
+	""" Returns number of weights in the checkpoint """
+	return dumpModelSize(checkpoint, details=details, logging=logging)
+
 def is_cuda_device(device):
 	""" predicate for 'device' being a cuda device """
 	return 'cuda' in str(device)
@@ -284,19 +303,91 @@ def getBatch(dataset, indices):
 	print(type(indices))
 	batch = np.sort(indices)
 
-def dumpModelSize(model, details=True):
-	total = sum(p.numel() for p in model.parameters())
-	if details:
-		for name, param in model.named_parameters():
-			if param.requires_grad:
-				num_params = sum(p.numel() for p in param)
-				print(f"name: {name}, num params: {num_params} ({(num_params/total) *100 :.2f}%)")
+def sizeB(tensor:Union[torch.Tensor, np.ndarray]) -> int:
+	""" return number of elements and size in bytes """
+	if type(tensor) == torch.Tensor:
+		numE = tensor.numel()
+		sizeb = numE * tensor.element_size()
+	else:
+		numE = tensor.size
+		sizeb = numE * tensor.itemsize
+	return sizeb
 
-	print(f"total params: {total}, ", end='')
-	print(f"trainable params: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
+def layers(checkpt:Union[torch.nn.Module, OrderedDict]) -> Tuple[str, torch.Tensor]:
+	""" Generator for layers in 'checkpt' """
+	if type(checkpt) == OrderedDict:
+		for k,v in checkpt.items():
+			yield k, v
+	else:
+		for name, param in model.named_parameters():
+			yield k, v
+
+def getLayersbyPrefix(checkpt:Union[torch.nn.Module, OrderedDict], prefix:str="") -> OrderedDict:
+	""" Returns all the layers that match given prefix """
+	pre_len = len(prefix)
+	output = OrderedDict()
+	for layer in layers(checkpt):
+		name, param = layer
+		if name[:pre_len] == prefix:
+			#print(name)
+			output.update({name: param})
+	return output
+
+def formatModelSize(ms:ModelSizes, tag:str="Total number of weights") -> str:
+	return f"{tag} = {(ms.num_w/(1024*1024)):.2f}m, trainable {(ms.trainable/(1024*1024)):.2f}m, sizeB {ms.sizeB/(1024*1024):.2f}mb"
+
+def layersStat(checkpt:Union[torch.nn.Module, OrderedDict], prefix:Union[str, list]="", klogging:bool=True) -> ModelSizes:
+	""" Returns (m_w, sizeb) for layers matching prefix """
+	total_num_w, total_trainable, total_sizeb = 0, 0, 0
+	if klogging: print(f"layersStat('{prefix}')")
+
+	if not isinstance(prefix, list):
+		prefix = [prefix]
+
+	for p in prefix:	
+		num_w, sizeb = 0, 0
+		layers = getLayersbyPrefix(checkpt, prefix=p)
+		#print(f"{prefix}: ")
+
+		for k, m in layers.items():
+			num_w += m.numel()
+			sizeb += sizeB(m)
+		if klogging: print(f" {p}*: {num_w=}, {sizeb=}")
+		total_num_w += num_w
+		total_sizeb += sizeb
+	total_trainable = total_num_w
+
+	return ModelSizes(total_num_w, total_trainable, total_sizeb)
+
+def dumpModelSize(model, details=True, logging=True) -> ModelSizes:
+	""" return total number of parameters and trainables """
+	total = 0
+	size_b = 0
+	num_trainable = 0
+
+	if type(model == OrderedDict):
+		for k, v in model.items():
+			if details: print(f"{k}:, {v.shape}, {torch.numel(v)}, {sizeB(v)/1024:.1f}kb")
+			total += torch.numel(v)
+			size_b += sizeB(v)
+		num_trainable = total 	#assuming all are trainable
+	else:
+		total = sum(p.numel() for p in model.parameters())
+		if details:
+			for name, param in model.named_parameters():
+				if param.requires_grad:
+					n = sum(p.numel() for p in param)
+					num_trainable += n
+					sizeb += sum(sizeB(p) for p in param)
+					if logging:		#dump trainable parameters as percentage of total
+						print(f"name: {name}, num params: {n} ({(n/total) *100 :.2f}%)")
+		if logging:
+			print(f"total params: {total}, ", end='')
+			print(f"trainable params: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
+	return ModelSizes(total, num_trainable, size_b)
 
 def dumpLayers(model):
-	for name, layer in model.named_modules():
+	for name, layer in getattr(model, "named_modules", ()):
 		if name != '':	#do not dump the model itself
 			print(f" {name}: {layer}")		
 

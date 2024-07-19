@@ -15,10 +15,10 @@ import numpy as np
 from PIL import Image
 from skimage.color import (rgb2lab, rgb2yuv, rgb2ycbcr, lab2rgb, yuv2rgb, ycbcr2rgb,
                            rgb2hsv, hsv2rgb, rgb2xyz, xyz2rgb, rgb2hed, hed2rgb, rgb2gray)
-from torchvision import datasets
+from torchvision import mldatasets
 #from torchvision.utils import check_integrity
 
-from datasets import dataset_base
+from mldatasets import dataset_base
 
 from mk_mlutils import projconfig
 from mk_mlutils.dataset import datasetutils
@@ -158,8 +158,8 @@ def download_cifar(
 
 	#1: select conversion to grayscale method or keep rgb color:
 	colorxform = color_dispatch.get(colorspace, lambda x: np.asarray(x)) #tograyscale.get(colorspace, lambda x: np.asarray(x))
-	cifar10_train = datasets.CIFAR10(datasets_root, train=True, download=cifar_missing, transform = colorxform)
-	cifar10_test  = datasets.CIFAR10(datasets_root, train=False, download=cifar_missing, transform = colorxform)
+	cifar10_train = mldatasets.CIFAR10(datasets_root, train=True, download=cifar_missing, transform = colorxform)
+	cifar10_test  = mldatasets.CIFAR10(datasets_root, train=False, download=cifar_missing, transform = colorxform)
 	return cifar10_train, cifar10_test
 
 

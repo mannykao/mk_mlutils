@@ -12,8 +12,8 @@ from typing import Tuple, Callable, Iterable, List, Any, Dict, Union, Optional
 
 import numpy as np
 
-from datasets import dataset_base
-import datasets.fashionmnist as fashion
+from mldatasets import dataset_base
+import mldatasets.fashionmnist as fashion
 
 from mk_mlutils import projconfig
 import mk_mlutils.dataset.datasetutils as datasetutils

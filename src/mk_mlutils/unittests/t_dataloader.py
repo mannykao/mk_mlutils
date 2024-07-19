@@ -12,8 +12,8 @@ from tqdm import tqdm
 import torch
 from torch.utils.data import Dataset, DataLoader
 
-from datasets.mnist import mnist
-from datasets.utils.xforms import GreyToFloat
+from mldatasets.mnist import mnist
+from mldatasets.utils.xforms import GreyToFloat
 from mk_mlutils.pipeline import batch, torchbatch
 
 batchsize=100

@@ -5,5 +5,7 @@ __pycache__
 
 venv4*
 datasets
+build
+dist
 *.egg-info
 *.sublime-workspace

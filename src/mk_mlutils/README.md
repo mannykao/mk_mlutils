@@ -2,6 +2,10 @@
 
 **This Library contains a lot of utilities useful for creating, training, testing, tracing/logging Shearlet Transform and Complex Valued Neural Networks and it's pipeline.**
 
+# Development Notes
+This is refactored from 'shnetutil', which is the main package from CoShNet.
+The 'shnetutil' was splitted into generic functions for ML (mk_mlutils) and those for CVNN 
+and cplx-ML development in 'cplxnn'.
 
 ## Tools:
 

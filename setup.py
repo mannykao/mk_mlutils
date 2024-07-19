@@ -32,7 +32,7 @@ requirements=[
 requirements = []
 
 setuptools.setup(name='mk_mlutils',
-	version='1.5',
+	version='1.6',		#1.6 supports 'mldatasets', <= 1.5 supports 'datasets'
 	description='ML and PyTorch Utilies',
 	author='Manny Ko',
 	author_email='man960@hotmail.com',

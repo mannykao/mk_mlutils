@@ -20,7 +20,7 @@ import os, sys, time
 #our packages
 from mk_mlutils.pipeline import BigFile, BigFileBuilder
 #our modules
-from datasets import dataset_base
+from mldatasets import dataset_base
 
 #
 # https://pymotw.com/3/multiprocessing/communication.html
@@ -182,7 +182,7 @@ def xformdataset(
 
 if __name__ == '__main__':
 	# for our unit test only (use the established Fashion dataset)
-	import datasets.fashionmnist.fashion as fashion
+	import mldatasets.fashionmnist.fashion as fashion
 	from .. import pysh_xform, shearletxform, torchutils
 
 	def prepFashion(	

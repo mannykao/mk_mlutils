@@ -38,8 +38,8 @@ def enable(**flags):
 		if k == 'kUseCplx':		#TODO: remove hardcoding
 			kUseCplx = v
 
-def getRefFile():
-	return __file__
+def getRefFile() -> Path:
+	return Path(__file__)
 
 def extractRepoRoot(reffile:str=__file__, reporoot:str=kRepoRoot) -> Path:
 	parts = Path(reffile).parts
@@ -88,20 +88,20 @@ if kStandAlone:
 		return datafolder / 'MNIST' / 'raw'
 
 	def createFashionMNISTFolder() -> Path:
-		datasets_root = getDataFolder()
-		dirutils.mkdir(str(datasets_root/'FashionMNIST'))
+		mldatasets_root = getDataFolder()
+		dirutils.mkdir(str(mldatasets_root/'FashionMNIST'))
 		dirutils.mkdir(str(getFashionMNISTFolder()))
 
 	def createCIFAR10Folder():
-		datasets_root = getDataFolder()
-		dirutils.mkdir(str(datasets_root / 'CIFAR10'))
+		mldatasets_root = getDataFolder()
+		dirutils.mkdir(str(mldatasets_root / 'CIFAR10'))
 
 	def getCIFAR10Folder() -> Path:
-		datasets_root = getDataFolder()
-		return datasets_root / 'CIFAR10'
+		mldatasets_root = getDataFolder()
+		return mldatasets_root / 'CIFAR10'
 else:
-	from datasets.utils.projconfig import getRepoRoot, getDataFolder, getFashionMNISTFolder, getMNISTFolder
-	#from datasets.utils.projconfig import createFashionMNISTFolder, createCIFAR10Folder, getCIFAR10Folder
+	from mldatasets.utils.projconfig import getRepoRoot, getDataFolder, getFashionMNISTFolder, getMNISTFolder
+	#from mldatasets.utils.projconfig import createFashionMNISTFolder, createCIFAR10Folder, getCIFAR10Folder
 
 
 if __name__ == "__main__":

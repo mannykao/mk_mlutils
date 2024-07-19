@@ -11,7 +11,7 @@ from typing import List, Union
 import numpy as np
 import scipy.interpolate as interpolate
 
-from datasets import dataset_base
+from mldatasets import dataset_base
 
 kTestRand=False
 #
@@ -230,7 +230,7 @@ if __name__ == '__main__':
 		# code taken from t_balsubset.py	
 		from mk_mlutils import projconfig
 		#from mk_mlutils.pipeline import loadMNIST
-		from datasets.mnist import mnist
+		from mldatasets.mnist import mnist
 
 		mnistdir = projconfig.getFashionMNISTFolder()
 		print(f"{mnistdir=}")

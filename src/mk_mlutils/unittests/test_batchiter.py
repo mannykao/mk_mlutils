@@ -13,7 +13,7 @@ from collections import Counter
 import numpy as np
 
 #torch stuff:
-from torchvision.datasets.mnist import MNIST
+from torchvision.mldatasets.mnist import MNIST
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader, random_split
 
@@ -21,7 +21,7 @@ from torch.utils.data import DataLoader, random_split
 from mk_mlutils import projconfig
 from mk_mlutils.pipeline import augmentation, batch
 from mk_mlutils.utils import torchutils
-from datasets import dataset_base
+from mldatasets import dataset_base
 from datasets.mnist import mnist
 
 

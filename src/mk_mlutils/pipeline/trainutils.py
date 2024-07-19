@@ -18,7 +18,7 @@ import torch.nn as nn
 from mkpyutils.classutils import method_exists
 from mkpyutils.testutil import time_spent
 
-from datasets import dataset_base
+from mldatasets import dataset_base
 
 from mk_mlutils import projconfig
 from mk_mlutils.dataset import datasetutils

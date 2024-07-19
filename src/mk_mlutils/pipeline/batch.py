@@ -18,7 +18,7 @@ from typing import Tuple, Callable, Iterable, List, Any, Dict, Union
 import asyncio
 
 #our modules
-from datasets import dataset_base
+from mldatasets import dataset_base
 
 from mk_mlutils import projconfig
 from mk_mlutils.pipeline.augmentation_base import BaseXform, NullXform
@@ -604,7 +604,7 @@ def verifyBatchCache(batchbuilder, xform):
 
 
 if __name__ == '__main__':
-	from datasets.mnist import mnist
+	from mldatasets.mnist import mnist
 
 	fashiondir = projconfig.getFashionMNISTFolder()
 

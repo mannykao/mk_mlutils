@@ -2,8 +2,8 @@ from pathlib import Path, PurePosixPath
 import multiprocessing
 import os, sys, time
 
-from datasets import dataset_base
-import datasets.fashionmnist.fashion as fashion
+from mldatasets import dataset_base
+import mldatasets.fashionmnist.fashion as fashion
 
 from mk_mlutils import projconfig
 import mk_mlutils.utils.torchutils as torchutils

@@ -7,7 +7,7 @@ Title: Context-Manager to support tracing PyTorch execution
 from typing import Tuple, Callable, Iterable, List, Any, Dict, Union
 
 from mk_mlutils import projconfig
-from datasets.mnist import mnist
+from mldatasets.mnist import mnist
 
 #
 # testing mnist.getdb() and  in standalone mode

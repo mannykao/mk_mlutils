@@ -17,7 +17,7 @@ from io import BytesIO
 
 #import our packages
 from mkpyutils import dirutils, folderiter
-from datasets import dataset_base
+from mldatasets import dataset_base
 
 from mk_mlutils.pipeline import BigFile
 
