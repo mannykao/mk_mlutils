@@ -30,8 +30,10 @@ def getHistogram(dataset:dataset_base.DataSet, bins=10, tag='', kStats=True) -> 
 	labels = db_stats.labels	
 	bins = bins if bins else n_classes 	#use same number bins as classes
 	# https://numpy.org/doc/stable/reference/generated/numpy.histogram.html
+	if type(labels[0]) == str: #convert it ot ints if needbe.
+		label2int = {label: i for i, label in enumerate(np.unique(labels))}
+		labels = [label2int[l] for l in labels]
 	hist, bin_edges = np.histogram(labels, bins, range=(0, n_classes), density=True)
-
 	return hist, bin_edges
 
 # https://tmramalho.github.io/blog/2013/12/16/how-to-do-inverse-transformation-sampling-in-scipy-and-numpy/
@@ -55,6 +57,32 @@ def inverse_transform_sampling(
 	rand_samples = rng.uniform(0, 1, n_samples)
 	samples = inv_cdf(rand_samples)
 	return samples	
+
+def inverse_transform_sampling_string(
+	dataset:dataset_base.DataSet, 
+	n_samples=100,
+	n_bins=20,
+	rng:np.random.Generator=None, 
+):
+	""" inverse-CDF xform sampling """
+	assert(dataset.isSorted)
+	hist, bin_edges = getHistogram(dataset, bins=n_bins, kStats=False)
+	#print(f"{bin_edges.shape=}")
+	cum_values = np.zeros(bin_edges.shape)
+	cum_values[1:] = np.cumsum(hist*np.diff(bin_edges))		#[0.0..1.0]
+	#print(f"{bin_edges=}, {cum_values=}")
+	# === HACK ===
+	# Remove duplicates from cum_values
+	unique_cum_values, unique_indices = np.unique(cum_values, return_index=True)
+	unique_bin_edges = bin_edges[unique_indices]
+	#=== HACK ===
+
+	inv_cdf = interpolate.interp1d(unique_cum_values, unique_bin_edges, kind='quadratic', assume_sorted=True)
+
+	rng = rng if rng else np.random.Generator(np.random.PCG64(1103))	#PCG64|MT19937|PCG64DXSM
+	rand_samples = rng.uniform(0, 1, n_samples)
+	samples = inv_cdf(rand_samples)
+	return samples
 
 if False:
 	def inverse_transform_sampling(
@@ -143,12 +171,20 @@ def inverseCDF_byLabels(
 	rng:np.random.Generator=np.random.Generator(np.random.PCG64(1103)),
 ):
 	""" Sample a subset and maintain the same class distribution efficiently """
-	samples = inverse_transform_sampling(
-		dataset, 
-		n_samples=n_samples, 
-		n_bins=bins,
-		rng = rng,		#PCG64|MT19937|PCG64DXSM
-	)
+	if type(dataset[0][1]) == str: #special redundancy in cumsum handling for string dtypes.
+		samples = inverse_transform_sampling_string(
+			dataset,
+			n_samples,
+			n_bins=bins,
+			rng = rng,
+		)
+	else:
+		samples = inverse_transform_sampling(
+			dataset,
+			n_samples=n_samples, 
+			n_bins=bins,
+			rng = rng,		#PCG64|MT19937|PCG64DXSM
+		)
 	#
 	# Efficient class + within-class sampling. Inspired by many-light sampling in raytracing
 	# "Monte Carlo techniques for direct lighting calculations" ACM Trans. Graph. 1996
